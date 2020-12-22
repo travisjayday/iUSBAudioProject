@@ -1,0 +1,648 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		565C3484258C20E70012ED2D /* iAudioServerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C3483258C20E70012ED2D /* iAudioServerApp.swift */; };
+		565C3486258C20E70012ED2D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C3485258C20E70012ED2D /* ContentView.swift */; };
+		565C3488258C20E70012ED2D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 565C3487258C20E70012ED2D /* Assets.xcassets */; };
+		565C348B258C20E70012ED2D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 565C348A258C20E70012ED2D /* Preview Assets.xcassets */; };
+		565CF23C258EA7D800FA4953 /* MuxAudioStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */; };
+		56967149258D7544007AC4E7 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = 56967148258D7544007AC4E7 /* Socket */; };
+		5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5696714B258D756F007AC4E7 /* USBMuxHandler.swift */; };
+		569E96C82590FB52006EC6BC /* USBAudioDriver.c in Sources */ = {isa = PBXBuildFile; fileRef = 569E96C72590FB52006EC6BC /* USBAudioDriver.c */; };
+		569E96D12590FBC4006EC6BC /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569E96D02590FBC4006EC6BC /* CoreFoundation.framework */; };
+		569E971125910880006EC6BC /* iAudioClientApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 569E971025910880006EC6BC /* iAudioClientApp.swift */; };
+		569E971325910880006EC6BC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 569E971225910880006EC6BC /* ContentView.swift */; };
+		569E971525910880006EC6BC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 569E971425910880006EC6BC /* Assets.xcassets */; };
+		569E971825910880006EC6BC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 569E971725910880006EC6BC /* Preview Assets.xcassets */; };
+		569E97202591089A006EC6BC /* DeviceIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 569E971F2591089A006EC6BC /* DeviceIcon.icns */; };
+		56C8529125910BA700453CA6 /* MuxHALAudioStreamer copy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C8529025910BA700453CA6 /* MuxHALAudioStreamer copy.swift */; };
+		56C8529C2591491000453CA6 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = 56C8529B2591491000453CA6 /* Socket */; };
+		56C8529F25914BD000453CA6 /* MuxAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		56F9CAFF2590F92300845C37 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		565C3480258C20E70012ED2D /* iAudioProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iAudioProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		565C3483258C20E70012ED2D /* iAudioServerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iAudioServerApp.swift; sourceTree = "<group>"; };
+		565C3485258C20E70012ED2D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		565C3487258C20E70012ED2D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		565C348A258C20E70012ED2D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		565C348C258C20E70012ED2D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		565C348D258C20E70012ED2D /* iAudioServer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iAudioServer.entitlements; sourceTree = "<group>"; };
+		565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MuxAudioStreamer.swift; path = iAudioServer/MuxAudioStreamer.swift; sourceTree = SOURCE_ROOT; };
+		568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxAudioPlayer.swift; sourceTree = "<group>"; };
+		5696714B258D756F007AC4E7 /* USBMuxHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBMuxHandler.swift; sourceTree = "<group>"; };
+		569E96C62590FB4F006EC6BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		569E96C72590FB52006EC6BC /* USBAudioDriver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = USBAudioDriver.c; sourceTree = "<group>"; };
+		569E96D02590FBC4006EC6BC /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		569E970E25910880006EC6BC /* iAudioClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iAudioClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		569E971025910880006EC6BC /* iAudioClientApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iAudioClientApp.swift; sourceTree = "<group>"; };
+		569E971225910880006EC6BC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		569E971425910880006EC6BC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		569E971725910880006EC6BC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		569E971925910880006EC6BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		569E971F2591089A006EC6BC /* DeviceIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DeviceIcon.icns; sourceTree = "<group>"; };
+		56C8529025910BA700453CA6 /* MuxHALAudioStreamer copy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MuxHALAudioStreamer copy.swift"; sourceTree = "<group>"; };
+		56F9CAA92590F72500845C37 /* DriverKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DriverKit.framework; path = System/Library/Frameworks/DriverKit.framework; sourceTree = SDKROOT; };
+		56F9CB1E2590FA3C00845C37 /* USBAudioDriver.driver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = USBAudioDriver.driver; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		565C347D258C20E70012ED2D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				56967149258D7544007AC4E7 /* Socket in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		569E970B25910880006EC6BC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				56C8529C2591491000453CA6 /* Socket in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		56F9CB1B2590FA3C00845C37 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				569E96D12590FBC4006EC6BC /* CoreFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		565C3477258C20E70012ED2D = {
+			isa = PBXGroup;
+			children = (
+				565C3482258C20E70012ED2D /* iAudioServer */,
+				56F9CAAB2590F72500845C37 /* USBAudioDriver */,
+				569E970F25910880006EC6BC /* iAudioClient */,
+				56F9CAA82590F72500845C37 /* Frameworks */,
+				565C3481258C20E70012ED2D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		565C3481258C20E70012ED2D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				565C3480258C20E70012ED2D /* iAudioProject.app */,
+				56F9CB1E2590FA3C00845C37 /* USBAudioDriver.driver */,
+				569E970E25910880006EC6BC /* iAudioClient.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		565C3482258C20E70012ED2D /* iAudioServer */ = {
+			isa = PBXGroup;
+			children = (
+				565C3483258C20E70012ED2D /* iAudioServerApp.swift */,
+				565C3485258C20E70012ED2D /* ContentView.swift */,
+				565C3487258C20E70012ED2D /* Assets.xcassets */,
+				565C348C258C20E70012ED2D /* Info.plist */,
+				565C348D258C20E70012ED2D /* iAudioServer.entitlements */,
+				565C3489258C20E70012ED2D /* Preview Content */,
+				5696714B258D756F007AC4E7 /* USBMuxHandler.swift */,
+				56C8529025910BA700453CA6 /* MuxHALAudioStreamer copy.swift */,
+				565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */,
+			);
+			path = iAudioServer;
+			sourceTree = "<group>";
+		};
+		565C3489258C20E70012ED2D /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				565C348A258C20E70012ED2D /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		569E970F25910880006EC6BC /* iAudioClient */ = {
+			isa = PBXGroup;
+			children = (
+				568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */,
+				569E971025910880006EC6BC /* iAudioClientApp.swift */,
+				569E971225910880006EC6BC /* ContentView.swift */,
+				569E971425910880006EC6BC /* Assets.xcassets */,
+				569E971925910880006EC6BC /* Info.plist */,
+				569E971625910880006EC6BC /* Preview Content */,
+			);
+			path = iAudioClient;
+			sourceTree = "<group>";
+		};
+		569E971625910880006EC6BC /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				569E971725910880006EC6BC /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		56F9CAA82590F72500845C37 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				569E96D02590FBC4006EC6BC /* CoreFoundation.framework */,
+				56F9CAA92590F72500845C37 /* DriverKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		56F9CAAB2590F72500845C37 /* USBAudioDriver */ = {
+			isa = PBXGroup;
+			children = (
+				569E971F2591089A006EC6BC /* DeviceIcon.icns */,
+				569E96C62590FB4F006EC6BC /* Info.plist */,
+				569E96C72590FB52006EC6BC /* USBAudioDriver.c */,
+			);
+			path = USBAudioDriver;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		565C347F258C20E70012ED2D /* iAudioProject */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 565C3490258C20E70012ED2D /* Build configuration list for PBXNativeTarget "iAudioProject" */;
+			buildPhases = (
+				565C347C258C20E70012ED2D /* Sources */,
+				565C347D258C20E70012ED2D /* Frameworks */,
+				565C347E258C20E70012ED2D /* Resources */,
+				56F9CAFF2590F92300845C37 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iAudioProject;
+			packageProductDependencies = (
+				56967148258D7544007AC4E7 /* Socket */,
+			);
+			productName = iAudioServer;
+			productReference = 565C3480258C20E70012ED2D /* iAudioProject.app */;
+			productType = "com.apple.product-type.application";
+		};
+		569E970D25910880006EC6BC /* iAudioClient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 569E971A25910880006EC6BC /* Build configuration list for PBXNativeTarget "iAudioClient" */;
+			buildPhases = (
+				569E970A25910880006EC6BC /* Sources */,
+				569E970B25910880006EC6BC /* Frameworks */,
+				569E970C25910880006EC6BC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iAudioClient;
+			packageProductDependencies = (
+				56C8529B2591491000453CA6 /* Socket */,
+			);
+			productName = iAudioClient;
+			productReference = 569E970E25910880006EC6BC /* iAudioClient.app */;
+			productType = "com.apple.product-type.application";
+		};
+		56F9CB1D2590FA3C00845C37 /* USBAudioDriver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 56F9CB212590FA3C00845C37 /* Build configuration list for PBXNativeTarget "USBAudioDriver" */;
+			buildPhases = (
+				56F9CB1A2590FA3C00845C37 /* Sources */,
+				56F9CB1B2590FA3C00845C37 /* Frameworks */,
+				56F9CB1C2590FA3C00845C37 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = USBAudioDriver;
+			productName = USBAudioDriver;
+			productReference = 56F9CB1E2590FA3C00845C37 /* USBAudioDriver.driver */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		565C3478258C20E70012ED2D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1230;
+				LastUpgradeCheck = 1230;
+				TargetAttributes = {
+					565C347F258C20E70012ED2D = {
+						CreatedOnToolsVersion = 12.3;
+					};
+					569E970D25910880006EC6BC = {
+						CreatedOnToolsVersion = 12.3;
+					};
+					56F9CB1D2590FA3C00845C37 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+				};
+			};
+			buildConfigurationList = 565C347B258C20E70012ED2D /* Build configuration list for PBXProject "iAudioProject" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 565C3477258C20E70012ED2D;
+			packageReferences = (
+				56967147258D7544007AC4E7 /* XCRemoteSwiftPackageReference "BlueSocket" */,
+			);
+			productRefGroup = 565C3481258C20E70012ED2D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				565C347F258C20E70012ED2D /* iAudioProject */,
+				56F9CB1D2590FA3C00845C37 /* USBAudioDriver */,
+				569E970D25910880006EC6BC /* iAudioClient */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		565C347E258C20E70012ED2D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565C348B258C20E70012ED2D /* Preview Assets.xcassets in Resources */,
+				565C3488258C20E70012ED2D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		569E970C25910880006EC6BC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				569E971825910880006EC6BC /* Preview Assets.xcassets in Resources */,
+				569E971525910880006EC6BC /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		56F9CB1C2590FA3C00845C37 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				569E97202591089A006EC6BC /* DeviceIcon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		565C347C258C20E70012ED2D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565CF23C258EA7D800FA4953 /* MuxAudioStreamer.swift in Sources */,
+				565C3486258C20E70012ED2D /* ContentView.swift in Sources */,
+				56C8529125910BA700453CA6 /* MuxHALAudioStreamer copy.swift in Sources */,
+				5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */,
+				565C3484258C20E70012ED2D /* iAudioServerApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		569E970A25910880006EC6BC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				569E971325910880006EC6BC /* ContentView.swift in Sources */,
+				569E971125910880006EC6BC /* iAudioClientApp.swift in Sources */,
+				56C8529F25914BD000453CA6 /* MuxAudioPlayer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		56F9CB1A2590FA3C00845C37 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				569E96C82590FB52006EC6BC /* USBAudioDriver.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		565C348E258C20E70012ED2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		565C348F258C20E70012ED2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		565C3491258C20E70012ED2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iAudioServer/iAudioServer.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"iAudioServer/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iAudioServer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.iAudioServer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		565C3492258C20E70012ED2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iAudioServer/iAudioServer.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"iAudioServer/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iAudioServer/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.iAudioServer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		569E971B25910880006EC6BC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"iAudioClient/Preview Content\"";
+				DEVELOPMENT_TEAM = 5QBSFPNHH6;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iAudioClient/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.iAudioClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		569E971C25910880006EC6BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"iAudioClient/Preview Content\"";
+				DEVELOPMENT_TEAM = 5QBSFPNHH6;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iAudioClient/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.iAudioClient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		56F9CB222590FA3C00845C37 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = USBAudioDriver/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.USBAudioDriver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = driver;
+			};
+			name = Debug;
+		};
+		56F9CB232590FA3C00845C37 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = USBAudioDriver/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.USBAudioDriver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = driver;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		565C347B258C20E70012ED2D /* Build configuration list for PBXProject "iAudioProject" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565C348E258C20E70012ED2D /* Debug */,
+				565C348F258C20E70012ED2D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		565C3490258C20E70012ED2D /* Build configuration list for PBXNativeTarget "iAudioProject" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565C3491258C20E70012ED2D /* Debug */,
+				565C3492258C20E70012ED2D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		569E971A25910880006EC6BC /* Build configuration list for PBXNativeTarget "iAudioClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				569E971B25910880006EC6BC /* Debug */,
+				569E971C25910880006EC6BC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		56F9CB212590FA3C00845C37 /* Build configuration list for PBXNativeTarget "USBAudioDriver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56F9CB222590FA3C00845C37 /* Debug */,
+				56F9CB232590FA3C00845C37 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		56967147258D7544007AC4E7 /* XCRemoteSwiftPackageReference "BlueSocket" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kitura/BlueSocket.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.200;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		56967148258D7544007AC4E7 /* Socket */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56967147258D7544007AC4E7 /* XCRemoteSwiftPackageReference "BlueSocket" */;
+			productName = Socket;
+		};
+		56C8529B2591491000453CA6 /* Socket */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56967147258D7544007AC4E7 /* XCRemoteSwiftPackageReference "BlueSocket" */;
+			productName = Socket;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 565C3478258C20E70012ED2D /* Project object */;
+}
