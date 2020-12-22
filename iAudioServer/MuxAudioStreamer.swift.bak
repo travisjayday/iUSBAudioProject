@@ -1,0 +1,107 @@
+//
+//  AudioStreamer.swift
+//  iAudioServer
+//
+//  Created by Travis Ziegler on 12/19/20.
+//
+
+import Foundation
+import AVFoundation
+
+
+class MuxAudioStreamer : NSObject, AVCaptureAudioDataOutputSampleBufferDelegate {
+    
+    var ses: AVCaptureSession!
+    var audioCon : AVCaptureConnection!
+    var audioOut : AVCaptureAudioDataOutput!
+    var packetReady: ((Data) -> Void)?
+    
+    var writer : AVAssetWriter!
+    var inputWriter : AVAssetWriterInput!
+    var recording = false
+
+    func makeSession(_packetReady: @escaping (_ img : Data) -> Void) {
+        packetReady = _packetReady
+        
+        do {
+            writer = try AVAssetWriter(outputURL: URL(fileURLWithPath: "/Users/tjz/Desktop/file.aiff"), fileType: .amr)
+        }
+        catch {
+           print("DED")
+        }
+        ses = AVCaptureSession()
+        
+        ses.beginConfiguration()
+        
+        let mic = AVCaptureDevice.default(for: AVMediaType.audio)
+        guard
+            let micIn = try? AVCaptureDeviceInput(device: mic!),
+            ses.canAddInput(micIn)
+        else {
+            print("Failed to open mic")
+            return
+        }
+
+        ses.addInput(micIn)
+        
+        audioOut = AVCaptureAudioDataOutput()
+        audioOut.setSampleBufferDelegate(self, queue: DispatchQueue.main)
+
+        guard ses.canAddOutput(audioOut) else {
+            print("Failed to add audio output")
+            return
+        }
+        
+        ses.addOutput(audioOut)
+
+        audioCon = audioOut.connection(with: .audio)
+        
+        ses.commitConfiguration()
+
+        ses.startRunning()
+    }
+
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        print(sampleBuffer.formatDescription)
+        return;
+
+        let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(sampleBuffer.formatDescription!)
+
+        print("NUMBUF")
+        print(CMSampleBufferGetNumSamples(sampleBuffer))
+
+        if recording {
+            recording = true
+            inputWriter = AVAssetWriterInput(mediaType: .audio, outputSettings: nil, sourceFormatHint: sampleBuffer.formatDescription)
+            inputWriter.expectsMediaDataInRealTime = true
+            writer.add(inputWriter)
+            writer.startWriting()
+        }
+        // 512 packets / samplebuf. 6 bytes / packet.
+
+       /* if inputWriter.isReadyForMoreMediaData {
+            print("Appendcing sample")
+            inputWriter.append(sampleBuffer)
+        }*/
+        
+        // remove mysterious extra trailing byte
+        print(sampleBuffer.formatDescription)
+        let asbd_data : NSData = NSData(bytes: asbd, length: MemoryLayout.size(ofValue: asbd?.pointee) - 1)
+        
+
+        let blockBuf = CMSampleBufferGetDataBuffer(sampleBuffer)!
+        var lengthAtOffset : Int = 0
+        var totalLength : Int = 0
+        var data : UnsafeMutablePointer<Int8>?
+        CMBlockBufferGetDataPointer(
+            blockBuf,
+            atOffset: 0,
+            lengthAtOffsetOut: &lengthAtOffset,
+            totalLengthOut: &totalLength,
+            dataPointerOut: &data)
+        let audioData = NSData(bytes: data, length: totalLength) as Data
+        print(audioData.count)
+        //apacketReady!(asbd_data as Data)
+    }
+
+}
