@@ -1,5 +1,32 @@
-sudo rm -r /Library/Audio/Plug-Ins/HAL/USBAudioDriver.driver
+dest=/Library/Audio/Plug-Ins/HAL
+src=$1
+
+echo "Going to install $src into $dest..."
+
+splits=(${src//\// })
+fname=${splits[${#splits[@]}-1]}
+
+
+echo "Removing $fname from $dest..."
+
+echo
+echo "Will run:"
+
+cmd="sudo rm -r $dest/$fname"
+
+echo $cmd
+echo
+read -p "Continue? " -n 1 -r
+
+eval $cmd
+
+echo "Restarting coreaudio..."
 sudo launchctl kickstart -kp system/com.apple.audio.coreaudiod
-exit
-sudo mv /Volumes/macHDD/XCode/DerivedData/iAudioProject-gqoandplmgjtybculddcsqxqcsyk/Build/Products/Debug/USBAudioDriver.driver /Library/Audio/Plug-Ins/HAL
+
+echo "Moving driver..."
+sudo mv $src $dest 
+
+echo "Restarting coreaudio..."
 sudo launchctl kickstart -kp system/com.apple.audio.coreaudiod
+
+echo "Complete"

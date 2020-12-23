@@ -96,7 +96,7 @@ class MuxHALAudioStreamer : NSObject {
         }
         
         let audioFormat = AudioStreamBasicDescription(
-            mSampleRate: 44100,
+            mSampleRate: 32000,
             mFormatID: kAudioFormatLinearPCM,
             mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked,
             mBytesPerPacket: 4,

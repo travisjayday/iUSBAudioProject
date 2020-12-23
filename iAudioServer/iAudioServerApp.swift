@@ -8,6 +8,7 @@
 import Cocoa
 import SwiftUI
 import Socket
+import AVFoundation
 
 /*
  Desired behavior:
@@ -41,7 +42,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var audioStreamer: MuxAudioStreamer!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        
+        func packetReaddd(data: Data) {}
+        do {
+            try MuxAudioStreamer().makeSession(_packetReady: packetReaddd)
+        }
+        catch {
+            print("Failed to start audio stream")
+        }
         self.contentView = ContentView();
         
         func connected(sock: Socket) {
@@ -67,14 +74,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             }
-            audioStreamer.makeSession(_packetReady: packetRead)
+            func handshakePacketReady(packet : Data) {
+                
+            }
+            do {
+                try audioStreamer.makeSession(_packetReady: packetRead,
+                                              _gotAudioFormat: handshakePacketReady)
+            }
+            catch {
+                print("Failed to start audio stream")
+            }
         }
         
         muxHandler = USBMuxHandler(_serverState: self.contentView.serverState,
                                    _connectedCallback: connected)
         
         DispatchQueue.global(qos: .utility).async {
-            self.muxHandler.tryConnectToDevice()
+            while true {
+                self.muxHandler.tryConnectToDevice()
+            }
         }
 
         print("Hello, world")

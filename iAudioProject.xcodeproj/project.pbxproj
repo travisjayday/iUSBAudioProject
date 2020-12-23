@@ -49,6 +49,7 @@
 		565C348D258C20E70012ED2D /* iAudioServer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iAudioServer.entitlements; sourceTree = "<group>"; };
 		565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MuxAudioStreamer.swift; path = iAudioServer/MuxAudioStreamer.swift; sourceTree = SOURCE_ROOT; };
 		568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxAudioPlayer.swift; sourceTree = "<group>"; };
+		5695D3A22592A0C800944361 /* USBAudioDriver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = USBAudioDriver.h; sourceTree = "<group>"; };
 		5696714B258D756F007AC4E7 /* USBMuxHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBMuxHandler.swift; sourceTree = "<group>"; };
 		569E96C62590FB4F006EC6BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		569E96C72590FB52006EC6BC /* USBAudioDriver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = USBAudioDriver.c; sourceTree = "<group>"; };
@@ -174,6 +175,7 @@
 				569E971F2591089A006EC6BC /* DeviceIcon.icns */,
 				569E96C62590FB4F006EC6BC /* Info.plist */,
 				569E96C72590FB52006EC6BC /* USBAudioDriver.c */,
+				5695D3A22592A0C800944361 /* USBAudioDriver.h */,
 			);
 			path = USBAudioDriver;
 			sourceTree = "<group>";

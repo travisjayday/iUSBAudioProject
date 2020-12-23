@@ -1,0 +1,7 @@
+tapping into usbmuxd: 
+
+sudo mv /var/run/usbmuxd /var/run/usbmux_real
+sudo socat -t100 -x -v UNIX-LISTEN:/var/run/usbmuxd,mode=777,reuseaddr,fork UNIX-CONNECT:/var/run/usbmux_real
+
+When you are done do not forget to:
+sudo mv /var/run/usbmux_real /var/run/usbmuxd

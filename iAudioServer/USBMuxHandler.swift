@@ -63,6 +63,7 @@ class USBMuxHandler: NSObject {
     }
     
     func cmdConnect(deviceId : UInt8, port : Int16) -> Data {
+        print("Genned conn request for device \(deviceId):\(port)")
         let msg = XML_HEAD + XML_CONNECT +
             "\t<key>DeviceID</key>\n" +
                 "\t<integer>\(deviceId)</integer>\n" +
@@ -118,6 +119,8 @@ class USBMuxHandler: NSObject {
         // try to connect to device's running app
         let resp = try sendCmd(sock: sock, cmd: cmdConnect(deviceId: devId, port: 7000))
         
+        print(resp)
+        
         if (resp["Number"] as! Int == 0) {
             // connection succesful
             updateStatus(status: .connected_active)
@@ -153,6 +156,7 @@ class USBMuxHandler: NSObject {
      or not. Try to connect.
      */
     func tryConnectToDevice() {
+        print("Starting tryToConnectToDevice()")
         
         // init magic array for sending header
         magic = [UInt8](repeating: 0x0, count: 12)
@@ -165,6 +169,7 @@ class USBMuxHandler: NSObject {
         do {
             
             // create socket
+            print("Trying to connect to usbmuxd")
             let sock = try Socket.create(family: .unix, type: .stream, proto: .unix)
             sock.readBufferSize = 32768
             try sock.connect(to: "/var/run/usbmuxd")
@@ -207,8 +212,15 @@ class USBMuxHandler: NSObject {
                         updateStatus(status: .trying_to_connect)
                         print("Attached device")
                         // sets status to either connected_active or connected_inactive
-                        while serverState.status != .connected_active {
-                            let connected = try connectDeviceById(sock: sock, devId: devId)
+                        
+                        let plist = try sendCmd(sock: sock, cmd: cmdListDevices())
+                        let devices = plist["DeviceList"] as! NSArray
+                        print(devices)
+
+                        let connected = try connectDeviceById(sock: sock, devId: devId)
+                        
+                        if !connected {
+                            sock.close()
                             sleep(5)
                         }
                     }

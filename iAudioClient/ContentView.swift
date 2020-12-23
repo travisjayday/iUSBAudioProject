@@ -7,15 +7,26 @@
 
 import SwiftUI
 
+class AppState : ObservableObject {
+    @Published var showAlert = false
+}
+
 struct ContentView: View {
+    @ObservedObject var appState : AppState
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        Button(action: {
+            self.appState.showAlert.toggle()
+        }) {
+            Text("Show Alert")
+        }
+        .alert(isPresented: self.$appState.showAlert) {
+            Alert(title: Text("Hello"))
+        }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(appState: AppState())
     }
 }

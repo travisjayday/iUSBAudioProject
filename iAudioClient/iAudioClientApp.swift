@@ -11,12 +11,15 @@ import Socket
 @main
 struct iAudioClientApp: App {
     
-    var client = ClientMain()
+    @State var client : ClientMain!
+    var contentView : ContentView = ContentView(appState: AppState())
     
     var body: some Scene {
         WindowGroup {
-            ContentView().onAppear(perform: {
+            contentView.onAppear(perform: {
+                self.client = ClientMain(appState: contentView.appState)
                 DispatchQueue.global(qos: .utility).async {
+                    sleep(2)
                     client.startListening()
                 }
             })
@@ -26,10 +29,16 @@ struct iAudioClientApp: App {
     
 class ClientMain  {
     var player : MuxAudioPlayer!
+    var sock : Socket!
+    var appState : AppState!
+    
+    init(appState : AppState) {
+        self.appState = appState
+    }
     
     func startListening() {
         do {
-            let sock = try Socket.create(family: .inet, type: .stream, proto: .tcp)
+            sock = try Socket.create(family: .inet, type: .stream, proto: .tcp)
             try sock.listen(on: 7000)
             try sock.acceptConnection()
             try sock.write(from: "Hello from iPad".data(using: .ascii)!)
@@ -59,6 +68,13 @@ class ClientMain  {
             }
         } catch {
             print("FAIL")
+        }
+        showAlert()
+    }
+    
+    func showAlert() {
+        DispatchQueue.main.async {
+            self.appState.showAlert = true
         }
     }
 }
