@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Socket
+import AVFoundation
 
 @main
 struct iAudioClientApp: App {
@@ -28,12 +29,23 @@ struct iAudioClientApp: App {
 }
     
 class ClientMain  {
-    var player : MuxAudioPlayer!
+    var player : MuxHALAudioPlayer!
     var sock : Socket!
     var appState : AppState!
     
     init(appState : AppState) {
         self.appState = appState
+    }
+    
+    func dataToASBD(data : NSData) -> AudioStreamBasicDescription {
+        var restored = AudioStreamBasicDescription()
+        let size = MemoryLayout.size(ofValue: restored)
+        withUnsafeMutableBytes(of: &restored) { (ptr: UnsafeMutableRawBufferPointer?) in
+            let d : UnsafeMutableRawPointer = ptr!.baseAddress!
+            memcpy(d, data.bytes, size)
+        }
+        print(restored)
+        return restored
     }
     
     func startListening() {
@@ -46,29 +58,44 @@ class ClientMain  {
             try sock.read(into: buf)
             let s = String.init(data: buf as Data, encoding: .utf8)
             print("Receifved: \(s)")
-            player = MuxAudioPlayer()
             let buffer = NSMutableData()
+            var currentAudioFormat : AudioStreamBasicDescription?
             while (true) {
-                var rawHeader: [Int8] = [Int8](repeating: 0, count: 5)
-                try sock.read(into: &rawHeader, bufSize: 5, truncate: true)
+                var rawHeader: [Int8] = [Int8](repeating: 0, count: 7)
+                if (sock.remoteConnectionClosed) { break;}
+                try sock.read(into: &rawHeader, bufSize: 7, truncate: true)
                 print("Received header: \(rawHeader[0]), \(rawHeader[1])")
                 let cmd = rawHeader[0]
                 
                 let header = rawHeader.map { UInt8(bitPattern: $0) }
-                let payloadSize = UInt32(header[1]) | UInt32(header[2]) << 8 | UInt32(header[3]) << 16 | UInt32(header[4]) << 24
+                let payloadSize = UInt32(header[3]) | UInt32(header[4]) << 8 | UInt32(header[5]) << 16 | UInt32(header[6]) << 24
                 
-                if cmd == 0x41 {
-                    print("Receiving PCM frame of size \(payloadSize)")
+                // we received a valid handshake packet
+                if rawHeader[0] == 0x69 && rawHeader[1] == 0x4 && rawHeader[2] == 0x19 {
+                    var asbdBuf = Data.init(count: Int(payloadSize))
+                    try asbdBuf.withUnsafeMutableBytes({ (ptr) in
+                        try sock.read(into: ptr, bufSize: Int(payloadSize), truncate: true)
+                    })
+                    currentAudioFormat = dataToASBD(data: asbdBuf as NSData)
+                    print("Received handshake with audio format \(currentAudioFormat)")
+                    print("payload size was \(payloadSize) and resulting data ws \(asbdBuf.count)")
+                    player = MuxHALAudioPlayer()
+                }
+                
+                // we received a valid PCM packet signature
+                if rawHeader[0] == 0x69 && rawHeader[1] == 0x4 && rawHeader[2] == 0x20 {
+                    //print("Receiving PCM frame of size \(payloadSize)")
                     var pcmBuf = Data.init(count: Int(payloadSize))
                     try pcmBuf.withUnsafeMutableBytes({ (ptr) in
                         try sock.read(into: ptr, bufSize: Int(payloadSize), truncate: true)
                     })
-                    player.playPacket(pcm: pcmBuf)
+                    player.playPacket(pcm: pcmBuf, format: currentAudioFormat!)
                 }
             }
         } catch {
             print("FAIL")
         }
+        player.stopPlaying()
         showAlert()
     }
     

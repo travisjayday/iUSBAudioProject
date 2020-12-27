@@ -18,21 +18,35 @@ class MuxAudioPlayer {
     var timestart : Double = 0
     var totalData : Double = 0
     let semaphore = DispatchSemaphore(value: 1)
+    let bufferCap : UInt32 = 7056
     
-    func playPacket(pcm: Data) {
+    var bytesReceived = 0
+    var timeStart : Double = 0
+    
+    func stopPlaying() {
+        let speed = (Double(bytesReceived) / (Date().timeIntervalSince1970 - timeStart))
+        print("SPEED: \(speed *  1000 * 1000)MB/s");
+        AudioQueueStop(audioQueue, true);
+        AudioQueueDispose(audioQueue, true);
+    }
+    
+    func playPacket(pcm: Data, format: AudioStreamBasicDescription) {
         if !initted {
             initted = true
             readyData = Data()
             timestart = Date().timeIntervalSince1970
+            audioFormat = format
             initPlayFromHelloPacket()
+            timeStart = Date().timeIntervalSince1970
+        
         }
         
         semaphore.wait()
-        if readyData.count < 2048 * 6 {
+        if readyData.count < 352800 {
             readyData.append(pcm)
         }
         semaphore.signal()
-        AudioQueueStart(audioQueue, nil)
+        //AudioQueueStart(audioQueue, nil)
         //print(readyData.count)
 
         /*
@@ -51,15 +65,17 @@ class MuxAudioPlayer {
         print("Puffing audio")
         var chunkToPlay : Data!
         
+        print("Data available: \(readyData.count)")
+        
         let aQBufSize : Int = Int(inBuffer.pointee.mAudioDataBytesCapacity)
-        if aQBufSize < readyData.count {
+        if aQBufSize <= readyData.count {
             chunkToPlay = readyData.subdata(in: Range(readyData.startIndex...readyData.startIndex+aQBufSize))
             readyData.removeFirst(aQBufSize)
         }
-        else if readyData.count > 1000 {
+        /*else if readyData.count > 1000 {
             chunkToPlay = readyData
             readyData.removeAll()
-        }
+        }*/
         else {
             print("NOT ENOUGH DATA")
             //AudioQueuePause(inAQ)
@@ -70,26 +86,18 @@ class MuxAudioPlayer {
             let rawPtr = UnsafeRawPointer(ptr)
             memcpy(inBuffer.pointee.mAudioData, rawPtr, chunkToPlay.count)
         }
+        semaphore.signal()
         
         inBuffer.pointee.mAudioDataByteSize = UInt32(chunkToPlay.count)
-        
         AudioQueueEnqueueBuffer(inAQ, inBuffer, 0, nil)
-        semaphore.signal()
+
     }
+    
 
     func initPlayFromHelloPacket() {
-
-        audioFormat = AudioStreamBasicDescription(
-            mSampleRate: 44100,
-            mFormatID: kAudioFormatLinearPCM,
-            mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked,
-            mBytesPerPacket: 4,
-            mFramesPerPacket: 1,
-            mBytesPerFrame: 4,
-            mChannelsPerFrame: 1,
-            mBitsPerChannel: 32,
-            mReserved: 0)
         
+        print("Starting audio queue with \(audioFormat)")
+
         AudioQueueNewOutput(
             &audioFormat,
             {
@@ -108,10 +116,10 @@ class MuxAudioPlayer {
             0,
             &audioQueue)
         
-        let bufferCap : UInt32 = 15320
-        let numBufs = 4
+ 
+        let numBufs = 3
         
-        for _ in 0...4 {
+        for _ in 0...numBufs {
             var buf : AudioQueueBufferRef!
             AudioQueueAllocateBuffer(audioQueue, bufferCap, &buf)
             buf.pointee.mAudioDataByteSize = bufferCap

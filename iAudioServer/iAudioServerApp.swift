@@ -39,32 +39,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem!
     var contentView: ContentView!
     var muxHandler: USBMuxHandler!
-    var audioStreamer: MuxAudioStreamer!
+    var audioStreamer: MuxHALAudioStreamer!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        func packetReaddd(data: Data) {}
-        do {
-            try MuxAudioStreamer().makeSession(_packetReady: packetReaddd)
+        var usbDriverDeviceID : AudioDeviceID
+
+        /*let count = AudioComponentCount(&desc)
+        var inComp : AudioComponent?
+        print("found \(count) devices")
+        for i in 0..<count {
+            
+            var searchResult = AudioComponentFindNext(inComp, &desc)
+  
+
+            var property : CFString?
+            var inst : AudioComponentInstance?
+            AudioComponentInstanceNew(searchResult!, &inst)
+
+            var size : UInt32 = UInt32(MemoryLayout.size(ofValue: 8))
+            AudioUnitGetProperty(inst!, kAudioDevicePropertyDeviceUID, kAudioUnitScope_Input, 1, &property, &size)
+            print("Got \(size) bytes of \(property)")
+            inComp = AudioComponentFindNext(inComp, &desc)
         }
-        catch {
-            print("Failed to start audio stream")
-        }
+        return;*/
+
         self.contentView = ContentView();
         
         func connected(sock: Socket) {
-            audioStreamer = MuxAudioStreamer()
+            audioStreamer = MuxHALAudioStreamer()
             func packetRead(data : Data) {
-                var cmd : UInt8 = 0x41
-                let cmdD = Data(bytes: &cmd, count: 1)
                 var len : UInt32 = UInt32(data.count)
-                let lenD = Data(bytes: &len, count: 4)
-                let d = NSMutableData()
-                d.append(cmdD)
-                d.append(lenD)
-                d.append(data)
+                let packet = NSMutableData()
+                packet.append(Data([0x69, 0x4, 0x20]))      // append command signature
+                packet.append(Data(bytes: &len, count: 4))  // append payload length
+                packet.append(data)                         // append payload
+                
                 do {
-                    try sock.write(from: d)
-                    print("Sent \(d.count)")
+                    try sock.write(from: packet)
+                    //print("Sent \(packet.count)")
                 } catch {
                     print("Failed to send packet")
                     audioStreamer.endSession()
@@ -74,12 +86,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             }
-            func handshakePacketReady(packet : Data) {
-                
+            func handshakePacketReady(absd : Data) throws {
+                var len : UInt32 = UInt32(absd.count)
+                let packet = NSMutableData()
+                packet.append(Data([0x69, 0x4, 0x19]))      // append command signature
+                packet.append(Data(bytes: &len, count: 4))  // append payload length
+                packet.append(absd)                         // append payload
+                try sock.write(from: packet)
             }
             do {
                 try audioStreamer.makeSession(_packetReady: packetRead,
-                                              _gotAudioFormat: handshakePacketReady)
+                                              _handshakePacketReady: handshakePacketReady)
             }
             catch {
                 print("Failed to start audio stream")

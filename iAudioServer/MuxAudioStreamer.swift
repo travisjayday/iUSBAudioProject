@@ -22,9 +22,9 @@ class MuxAudioStreamer : NSObject, AVCaptureAudioDataOutputSampleBufferDelegate 
     func frameCallback(
         scopedSelf: MuxAudioStreamer!,
         audioBuf: AudioQueueBufferRef) {
-        AudioQueueEnqueueBuffer(audioQueue, audioBuf, 0, nil)
         let data = NSData(bytes: audioBuf.pointee.mAudioData, length: Int(audioBuf.pointee.mAudioDataByteSize))
         scopedSelf.packetReady!(data as Data)
+        AudioQueueEnqueueBuffer(audioQueue, audioBuf, 0, nil)
     }
     
     func endSession() {
@@ -32,23 +32,24 @@ class MuxAudioStreamer : NSObject, AVCaptureAudioDataOutputSampleBufferDelegate 
         AudioQueueDispose(audioQueue, true)
     }
     
-    func craftHandshakePacket(asbd : AudioStreamBasicDescription) -> Data {
-        let data : NSData
-        withUnsafeBytes(of: &asbd) { (ptr: UnsafeRawBufferPointer) -> in
-            let size = MemoryLayout.size(ofValue: asbd)
-            print(size)
-            data = NSData(bytes:ptr, length: MemoryLayout.size(ofValue: asbd))
+    func asbdToData(asbd : AudioStreamBasicDescription) -> Data {
+        var data : NSMutableData = NSMutableData()
+        
+        // append ASBD
+        withUnsafeBytes(of: asbd) { (ptr: UnsafeRawBufferPointer?) in
+            data.append(NSMutableData(bytes: ptr?.baseAddress, length: MemoryLayout.size(ofValue: asbd)) as Data)
         }
-        return Data()
+        print("converted ASBD \(asbd) to data with count \(data.count)")
+        return data as Data
     }
      
     func makeSession(_packetReady: @escaping (_ img : Data) -> Void,
-                     _handshakePacketReady: @escaping (_ format : Data) -> Void
+                     _handshakePacketReady: @escaping (_ format : Data) throws -> Void
     ) throws {
         packetReady = _packetReady
         
         audioFormat = try VirtualUSBAudioDriver_getBasicAudioDescription()
-        _handshakePacketReady(craftHandshakePacket(asbd: audioFormat))
+        try _handshakePacketReady(asbdToData(asbd: audioFormat))
 
         AudioQueueNewInput(
             &audioFormat,
@@ -73,14 +74,41 @@ class MuxAudioStreamer : NSObject, AVCaptureAudioDataOutputSampleBufferDelegate 
         let size = MemoryLayout<CFString>.size
         let stat = AudioQueueSetProperty(audioQueue, kAudioQueueProperty_CurrentDevice, &uid, UInt32(MemoryLayout<CFString>.size))
    
-        let bufferCap : UInt32 = 5048
-        var buf : AudioQueueBufferRef!
-        AudioQueueAllocateBuffer(audioQueue, bufferCap, &buf)
-        AudioQueueEnqueueBuffer(audioQueue, buf, 0, nil)
+        let bufferCap : UInt32 = 7056
+        let numBufs = 2
+        
+        for _ in 0...numBufs {
+            var buf : AudioQueueBufferRef!
+            AudioQueueAllocateBuffer(audioQueue, bufferCap, &buf)
+            AudioQueueEnqueueBuffer(audioQueue, buf, 0, nil)
+        }
+        
         AudioQueueStart(audioQueue, nil)
     }
     
+    func handle(_ errorCode: OSStatus) throws {
+        if errorCode != kAudioHardwareNoError {
+            let error = NSError(domain: NSOSStatusErrorDomain, code: Int(errorCode), userInfo: [NSLocalizedDescriptionKey : "CAError: \(errorCode)" ])
+            print(error)
+            throw error
+        }
+    }
+    
     func VirtualUSBAudioDriver_getBasicAudioDescription() throws -> AudioStreamBasicDescription {
+        let id = try VirtualUSBAudioDriver_getDeviceID()
+        
+        // Get the stream configuration of the device. It's a list of audio buffers.
+        var streamConfigAddress = AudioObjectPropertyAddress(mSelector: kAudioStreamPropertyPhysicalFormat, mScope: kAudioDevicePropertyScopeInput, mElement: 0)
+        
+        var absd = AudioStreamBasicDescription()
+        var size : UInt32 = UInt32(MemoryLayout.size(ofValue: absd))
+
+        try handle(AudioObjectGetPropertyData(id, &streamConfigAddress, 0, nil, &size, &absd))
+        
+        return absd
+    }
+    
+    func VirtualUSBAudioDriver_getDeviceID() throws -> AudioDeviceID {
 
         // Construct the address of the property which holds all available devices
         var devicesPropertyAddress = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDevices, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMaster)
@@ -112,17 +140,8 @@ class MuxAudioStreamer : NSObject, AVCaptureAudioDataOutputSampleBufferDelegate 
             try handle(AudioObjectGetPropertyData(id, &deviceNamePropertyAddress, 0, nil, &propertySize, &name))
            
             if CFStringCompare("USBAudioDevice_UID" as CFString, name, CFStringCompareFlags(rawValue: 0)) == CFComparisonResult.compareEqualTo {
-                // Now that we know the device ID, query it
-                
-                // Get the stream configuration of the device. It's a list of audio buffers.
-                var streamConfigAddress = AudioObjectPropertyAddress(mSelector: kAudioStreamPropertyPhysicalFormat, mScope: kAudioDevicePropertyScopeInput, mElement: 0)
-                
-                var absd = AudioStreamBasicDescription()
-                var size : UInt32 = UInt32(MemoryLayout.size(ofValue: absd))
-
-                try handle(AudioObjectGetPropertyData(id, &streamConfigAddress, 0, nil, &size, &absd))
-                
-                return absd
+                // Now that we know the device ID, return it
+                return id
             }
         }
         throw NSError(domain: "Error_Domain", code: 100, userInfo: nil)

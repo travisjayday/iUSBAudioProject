@@ -186,6 +186,9 @@ class USBMuxHandler: NSObject {
                 print("Device found #\(devId)")
                 
                 let connected = try connectDeviceById(sock: sock, devId: devId)
+                if (connected) {
+                    while (true) {}
+                }
             }
             
             print("No device connected. start listening");

@@ -2508,7 +2508,7 @@ static OSStatus USBAudio_GetStreamPropertyData(AudioServerPlugInDriverRef inDriv
             pthread_mutex_lock(&gPlugIn_StateMutex);
             ((AudioStreamBasicDescription*)outData)->mSampleRate = gDevice_SampleRate;
             ((AudioStreamBasicDescription*)outData)->mFormatID = kAudioFormatLinearPCM;
-            ((AudioStreamBasicDescription*)outData)->mFormatFlags = kAudioFormatFlagIsFloat | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
+            ((AudioStreamBasicDescription*)outData)->mFormatFlags = kDevice_FormatFlag | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
             ((AudioStreamBasicDescription*)outData)->mBytesPerPacket = kDevice_BytesPerFrame;
             ((AudioStreamBasicDescription*)outData)->mFramesPerPacket = 1;
             ((AudioStreamBasicDescription*)outData)->mBytesPerFrame = kDevice_BytesPerFrame;
@@ -2539,7 +2539,7 @@ static OSStatus USBAudio_GetStreamPropertyData(AudioServerPlugInDriverRef inDriv
             {
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mSampleRate = kDevice_SampleRateOption1;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mFormatID = kAudioFormatLinearPCM;
-                ((AudioStreamRangedDescription*)outData)[0].mFormat.mFormatFlags = kAudioFormatFlagIsFloat | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
+                ((AudioStreamRangedDescription*)outData)[0].mFormat.mFormatFlags = kDevice_FormatFlag | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mBytesPerPacket = kDevice_BytesPerFrame;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mFramesPerPacket = 1;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mBytesPerFrame = kDevice_BytesPerFrame;
@@ -2552,7 +2552,7 @@ static OSStatus USBAudio_GetStreamPropertyData(AudioServerPlugInDriverRef inDriv
             {
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mSampleRate = kDevice_SampleRateOption2;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mFormatID = kAudioFormatLinearPCM;
-                ((AudioStreamRangedDescription*)outData)[1].mFormat.mFormatFlags = kAudioFormatFlagIsFloat | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
+                ((AudioStreamRangedDescription*)outData)[1].mFormat.mFormatFlags = kDevice_FormatFlag | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mBytesPerPacket = kDevice_BytesPerFrame;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mFramesPerPacket = 1;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mBytesPerFrame = kDevice_BytesPerFrame;
@@ -2637,7 +2637,7 @@ static OSStatus USBAudio_SetStreamPropertyData(AudioServerPlugInDriverRef inDriv
             // change is the sample rate.
             FailWithAction(inDataSize != sizeof(AudioStreamBasicDescription), theAnswer = kAudioHardwareBadPropertySizeError, Done, "USBAudio_SetStreamPropertyData: wrong size for the data for kAudioStreamPropertyPhysicalFormat");
             FailWithAction(((const AudioStreamBasicDescription*)inData)->mFormatID != kAudioFormatLinearPCM, theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported format ID for kAudioStreamPropertyPhysicalFormat");
-            FailWithAction(((const AudioStreamBasicDescription*)inData)->mFormatFlags != (kAudioFormatFlagIsFloat | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked), theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported format flags for kAudioStreamPropertyPhysicalFormat");
+            FailWithAction(((const AudioStreamBasicDescription*)inData)->mFormatFlags != (kDevice_FormatFlag | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked), theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported format flags for kAudioStreamPropertyPhysicalFormat");
             FailWithAction(((const AudioStreamBasicDescription*)inData)->mBytesPerPacket != kDevice_BytesPerFrame, theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported bytes per packet for kAudioStreamPropertyPhysicalFormat");
             FailWithAction(((const AudioStreamBasicDescription*)inData)->mFramesPerPacket != 1, theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported frames per packet for kAudioStreamPropertyPhysicalFormat");
             FailWithAction(((const AudioStreamBasicDescription*)inData)->mBytesPerFrame != kDevice_BytesPerFrame, theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported bytes per frame for kAudioStreamPropertyPhysicalFormat");
@@ -3767,7 +3767,8 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
     FailWithAction(inDeviceObjectID != kObjectID_Device, theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_DoIOOperation: bad device ID");
     FailWithAction((inStreamObjectID != kObjectID_Stream_Input) && (inStreamObjectID != kObjectID_Stream_Output), theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_DoIOOperation: bad stream ID");
 
-    /*// clear the buffer if this iskAudioServerPlugInIOOperationReadInput
+    /*
+    // clear the buffer if this iskAudioServerPlugInIOOperationReadInput
     if(inOperationID == kAudioServerPlugInIOOperationReadInput)
     {
         // we are always dealing with a 2 channel 32 bit float buffer
@@ -3776,6 +3777,7 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
         //syslog(LOG_WARNING, "MIC IN: %d", val);
         memset(ioMainBuffer, val, inIOBufferFrameSize * 8);
     }
+    /*
     else if (inOperationID == kAudioServerPlugInIOOperationWriteMix) {
         
     }*/

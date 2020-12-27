@@ -12,6 +12,7 @@
 		565C3488258C20E70012ED2D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 565C3487258C20E70012ED2D /* Assets.xcassets */; };
 		565C348B258C20E70012ED2D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 565C348A258C20E70012ED2D /* Preview Assets.xcassets */; };
 		565CF23C258EA7D800FA4953 /* MuxAudioStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */; };
+		5694BD0C25979BFB002A6ABA /* MuxHalAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */; };
 		56967149258D7544007AC4E7 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = 56967148258D7544007AC4E7 /* Socket */; };
 		5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5696714B258D756F007AC4E7 /* USBMuxHandler.swift */; };
 		569E96C82590FB52006EC6BC /* USBAudioDriver.c in Sources */ = {isa = PBXBuildFile; fileRef = 569E96C72590FB52006EC6BC /* USBAudioDriver.c */; };
@@ -49,6 +50,7 @@
 		565C348D258C20E70012ED2D /* iAudioServer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iAudioServer.entitlements; sourceTree = "<group>"; };
 		565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MuxAudioStreamer.swift; path = iAudioServer/MuxAudioStreamer.swift; sourceTree = SOURCE_ROOT; };
 		568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxAudioPlayer.swift; sourceTree = "<group>"; };
+		5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxHalAudioPlayer.swift; sourceTree = "<group>"; };
 		5695D3A22592A0C800944361 /* USBAudioDriver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = USBAudioDriver.h; sourceTree = "<group>"; };
 		5696714B258D756F007AC4E7 /* USBMuxHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBMuxHandler.swift; sourceTree = "<group>"; };
 		569E96C62590FB4F006EC6BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				569E971425910880006EC6BC /* Assets.xcassets */,
 				569E971925910880006EC6BC /* Info.plist */,
 				569E971625910880006EC6BC /* Preview Content */,
+				5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */,
 			);
 			path = iAudioClient;
 			sourceTree = "<group>";
@@ -332,6 +335,7 @@
 			files = (
 				569E971325910880006EC6BC /* ContentView.swift in Sources */,
 				569E971125910880006EC6BC /* iAudioClientApp.swift in Sources */,
+				5694BD0C25979BFB002A6ABA /* MuxHalAudioPlayer.swift in Sources */,
 				56C8529F25914BD000453CA6 /* MuxAudioPlayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

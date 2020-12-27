@@ -140,12 +140,13 @@ static Boolean                  gBox_Acquired                   = true;
 
 static pthread_mutex_t          gDevice_IOMutex                 = PTHREAD_MUTEX_INITIALIZER;
 static UInt64                   gDevice_IOIsRunning             = 0;
-static const Float64            kDevice_SampleRateOption1       = 32000.0;
-static const Float64            kDevice_SampleRateOption2       = 44100.0;
+static const Float64            kDevice_SampleRateOption1       = 44100.0;
+static const Float64            kDevice_SampleRateOption2       = 48000.0;
 static Float64                  gDevice_SampleRate              = kDevice_SampleRateOption1;
 static const UInt32             kDevice_RingBufferSize          = 16384;
 static const UInt32             kDevice_NumChannels             = 1;
 static const UInt32             kDevice_BitsPerChannel          = 16;
+static const UInt32             kDevice_FormatFlag              = kAudioFormatFlagIsSignedInteger;
 static const UInt32             kDevice_BytesPerFrame           = (kDevice_BitsPerChannel / 8) * kDevice_NumChannels;
 static Float64                  gDevice_HostTicksPerFrame       = 0.0;
 static UInt64                   gDevice_NumberTimeStamps        = 0;
