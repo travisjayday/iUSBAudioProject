@@ -294,7 +294,8 @@ static OSStatus USBAudio_PerformDeviceConfigurationChange(AudioServerPlugInDrive
     // check the arguments
     FailWithAction(inDriver != gAudioServerPlugInDriverRef, theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_PerformDeviceConfigurationChange: bad driver reference");
     FailWithAction(inDeviceObjectID != kObjectID_Device, theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_PerformDeviceConfigurationChange: bad device ID");
-    FailWithAction((inChangeAction != kDevice_SampleRateOption1) && (inChangeAction != kDevice_SampleRateOption2), theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_PerformDeviceConfigurationChange: bad sample rate");
+    
+    FailWithAction((inChangeAction != kDevice_SampleRateOption1_UInt64) && (inChangeAction != kDevice_SampleRateOption2_UInt64), theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_PerformDeviceConfigurationChange: bad sample rate");
     
     // lock the state mutex
     pthread_mutex_lock(&gPlugIn_StateMutex);
@@ -2104,13 +2105,13 @@ static OSStatus USBAudio_GetDevicePropertyData(AudioServerPlugInDriverRef inDriv
             // fill out the return array
             if(theNumberItemsToFetch > 0)
             {
-                ((AudioValueRange*)outData)[0].mMinimum = kDevice_SampleRateOption1;
-                ((AudioValueRange*)outData)[0].mMaximum = kDevice_SampleRateOption1;
+                ((AudioValueRange*)outData)[0].mMinimum = kDevice_SampleRateOption1_Float64;
+                ((AudioValueRange*)outData)[0].mMaximum = kDevice_SampleRateOption1_Float64;
             }
             if(theNumberItemsToFetch > 1)
             {
-                ((AudioValueRange*)outData)[1].mMinimum = kDevice_SampleRateOption2;
-                ((AudioValueRange*)outData)[1].mMaximum = kDevice_SampleRateOption2;
+                ((AudioValueRange*)outData)[1].mMinimum = kDevice_SampleRateOption2_Float64;
+                ((AudioValueRange*)outData)[1].mMaximum = kDevice_SampleRateOption2_Float64;
             }
             
             // report how much we wrote
@@ -2215,7 +2216,7 @@ static OSStatus USBAudio_SetDevicePropertyData(AudioServerPlugInDriverRef inDriv
 
             // check the arguments
             FailWithAction(inDataSize != sizeof(Float64), theAnswer = kAudioHardwareBadPropertySizeError, Done, "USBAudio_SetDevicePropertyData: wrong size for the data for kAudioDevicePropertyNominalSampleRate");
-            FailWithAction((*((const Float64*)inData) != kDevice_SampleRateOption1) && (*((const Float64*)inData) != kDevice_SampleRateOption2), theAnswer = kAudioHardwareIllegalOperationError, Done, "USBAudio_SetDevicePropertyData: unsupported value for kAudioDevicePropertyNominalSampleRate");
+            FailWithAction((*((const Float64*)inData) != kDevice_SampleRateOption1_Float64) && (*((const Float64*)inData) != kDevice_SampleRateOption2_Float64), theAnswer = kAudioHardwareIllegalOperationError, Done, "USBAudio_SetDevicePropertyData: unsupported value for kAudioDevicePropertyNominalSampleRate");
             
             // make sure that the new value is different than the old value
             pthread_mutex_lock(&gPlugIn_StateMutex);
@@ -2393,7 +2394,7 @@ static OSStatus USBAudio_GetStreamPropertyDataSize(AudioServerPlugInDriverRef in
 
         case kAudioStreamPropertyAvailableVirtualFormats:
         case kAudioStreamPropertyAvailablePhysicalFormats:
-            *outDataSize = kDevice_NumChannels * sizeof(AudioStreamRangedDescription);
+            *outDataSize = 2 * sizeof(AudioStreamRangedDescription);
             break;
 
         default:
@@ -2537,7 +2538,7 @@ static OSStatus USBAudio_GetStreamPropertyData(AudioServerPlugInDriverRef inDriv
             // fill out the return array
             if(theNumberItemsToFetch > 0)
             {
-                ((AudioStreamRangedDescription*)outData)[0].mFormat.mSampleRate = kDevice_SampleRateOption1;
+                ((AudioStreamRangedDescription*)outData)[0].mFormat.mSampleRate = kDevice_SampleRateOption1_Float64;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mFormatID = kAudioFormatLinearPCM;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mFormatFlags = kDevice_FormatFlag | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mBytesPerPacket = kDevice_BytesPerFrame;
@@ -2545,12 +2546,12 @@ static OSStatus USBAudio_GetStreamPropertyData(AudioServerPlugInDriverRef inDriv
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mBytesPerFrame = kDevice_BytesPerFrame;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mChannelsPerFrame = kDevice_NumChannels;
                 ((AudioStreamRangedDescription*)outData)[0].mFormat.mBitsPerChannel = kDevice_BitsPerChannel;
-                ((AudioStreamRangedDescription*)outData)[0].mSampleRateRange.mMinimum = kDevice_SampleRateOption1;
-                ((AudioStreamRangedDescription*)outData)[0].mSampleRateRange.mMaximum = kDevice_SampleRateOption1;
+                ((AudioStreamRangedDescription*)outData)[0].mSampleRateRange.mMinimum = kDevice_SampleRateOption1_Float64;
+                ((AudioStreamRangedDescription*)outData)[0].mSampleRateRange.mMaximum = kDevice_SampleRateOption1_Float64;
             }
             if(theNumberItemsToFetch > 1)
             {
-                ((AudioStreamRangedDescription*)outData)[1].mFormat.mSampleRate = kDevice_SampleRateOption2;
+                ((AudioStreamRangedDescription*)outData)[1].mFormat.mSampleRate = kDevice_SampleRateOption2_Float64;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mFormatID = kAudioFormatLinearPCM;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mFormatFlags = kDevice_FormatFlag | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mBytesPerPacket = kDevice_BytesPerFrame;
@@ -2558,8 +2559,8 @@ static OSStatus USBAudio_GetStreamPropertyData(AudioServerPlugInDriverRef inDriv
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mBytesPerFrame = kDevice_BytesPerFrame;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mChannelsPerFrame = kDevice_NumChannels;
                 ((AudioStreamRangedDescription*)outData)[1].mFormat.mBitsPerChannel = kDevice_BitsPerChannel;
-                ((AudioStreamRangedDescription*)outData)[1].mSampleRateRange.mMinimum = kDevice_SampleRateOption2;
-                ((AudioStreamRangedDescription*)outData)[1].mSampleRateRange.mMaximum = kDevice_SampleRateOption2;
+                ((AudioStreamRangedDescription*)outData)[1].mSampleRateRange.mMinimum = kDevice_SampleRateOption2_Float64;
+                ((AudioStreamRangedDescription*)outData)[1].mSampleRateRange.mMaximum = kDevice_SampleRateOption2_Float64;
             }
             
             // report how much we wrote
@@ -2643,7 +2644,7 @@ static OSStatus USBAudio_SetStreamPropertyData(AudioServerPlugInDriverRef inDriv
             FailWithAction(((const AudioStreamBasicDescription*)inData)->mBytesPerFrame != kDevice_BytesPerFrame, theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported bytes per frame for kAudioStreamPropertyPhysicalFormat");
             FailWithAction(((const AudioStreamBasicDescription*)inData)->mChannelsPerFrame != kDevice_NumChannels, theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported channels per frame for kAudioStreamPropertyPhysicalFormat");
             FailWithAction(((const AudioStreamBasicDescription*)inData)->mBitsPerChannel != kDevice_BitsPerChannel, theAnswer = kAudioDeviceUnsupportedFormatError, Done, "USBAudio_SetStreamPropertyData: unsupported bits per channel for kAudioStreamPropertyPhysicalFormat");
-            FailWithAction((((const AudioStreamBasicDescription*)inData)->mSampleRate != kDevice_SampleRateOption1) && (((const AudioStreamBasicDescription*)inData)->mSampleRate != kDevice_SampleRateOption2), theAnswer = kAudioHardwareIllegalOperationError, Done, "USBAudio_SetStreamPropertyData: unsupported sample rate for kAudioStreamPropertyPhysicalFormat");
+            FailWithAction((((const AudioStreamBasicDescription*)inData)->mSampleRate != kDevice_SampleRateOption1_Float64) && (((const AudioStreamBasicDescription*)inData)->mSampleRate != kDevice_SampleRateOption2_Float64), theAnswer = kAudioHardwareIllegalOperationError, Done, "USBAudio_SetStreamPropertyData: unsupported sample rate for kAudioStreamPropertyPhysicalFormat");
             
             // If we made it this far, the requested format is something we support, so make sure the sample rate is actually different
             pthread_mutex_lock(&gPlugIn_StateMutex);

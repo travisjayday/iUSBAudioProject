@@ -62,13 +62,16 @@ class ClientMain  {
             var currentAudioFormat : AudioStreamBasicDescription?
             while (true) {
                 var rawHeader: [Int8] = [Int8](repeating: 0, count: 7)
-                if (sock.remoteConnectionClosed) { break;}
+                if (sock.remoteConnectionClosed) { break; }
                 try sock.read(into: &rawHeader, bufSize: 7, truncate: true)
                 print("Received header: \(rawHeader[0]), \(rawHeader[1])")
                 let cmd = rawHeader[0]
                 
                 let header = rawHeader.map { UInt8(bitPattern: $0) }
-                let payloadSize = UInt32(header[3]) | UInt32(header[4]) << 8 | UInt32(header[5]) << 16 | UInt32(header[6]) << 24
+                let payloadSize = UInt32(header[3])
+                    | UInt32(header[4]) << 8
+                    | UInt32(header[5]) << 16
+                    | UInt32(header[6]) << 24
                 
                 // we received a valid handshake packet
                 if rawHeader[0] == 0x69 && rawHeader[1] == 0x4 && rawHeader[2] == 0x19 {

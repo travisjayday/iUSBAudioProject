@@ -18,6 +18,7 @@ class MuxHALAudioPlayer {
     var timeStart : Double = 0
     var bytesReceived : Int = 0
     let semaphore = DispatchSemaphore(value: 1)
+    var internalIOBufferDuration : Double = 0.0
     
     func stopPlaying() {
         let speed = (Double(bytesReceived) / (Date().timeIntervalSince1970 - timeStart))
@@ -72,6 +73,25 @@ class MuxHALAudioPlayer {
                              kAudioUnitScope_Output,
                              0, &audioFormat, UInt32(MemoryLayout.size(ofValue: audioFormat)))
         
+        
+        AudioUnitSetProperty(audioUnit!,
+                             kAudioUnitProperty_StreamFormat,
+                             kAudioUnitScope_Input,
+                             0, &audioFormat, UInt32(MemoryLayout.size(ofValue: audioFormat)))
+
+        
+
+        do {
+            var ses = AVAudioSession.sharedInstance()
+            try ses.setPreferredIOBufferDuration(TimeInterval(0.01))
+            self.internalIOBufferDuration = ses.ioBufferDuration
+        }
+        catch {
+            print("FAILED TO SET IO Duration")
+        }
+        
+        print("Configured for internalIOBufersize=\(internalIOBufferDuration) ")
+        
         var callbackStruct = AURenderCallbackStruct()
         callbackStruct.inputProc = {
             ( inRefCon : UnsafeMutableRawPointer,
@@ -80,13 +100,15 @@ class MuxHALAudioPlayer {
               inBusNumber : UInt32,
               inNumberFrames : UInt32,
               ioData : UnsafeMutablePointer<AudioBufferList>?) -> OSStatus in
-            print("Inside audio playback callback")
+            print("Inside audio playback callback need to fill \(inNumberFrames) of data")
             let _self = Unmanaged<MuxHALAudioPlayer>.fromOpaque(inRefCon).takeUnretainedValue()
             if ioData != nil {
                 let abl = UnsafeMutableAudioBufferListPointer(ioData)!
                 _self.semaphore.wait()
                 var buffer = abl[0]
-                buffer.mDataByteSize = 4096
+                buffer.mDataByteSize = UInt32(round(_self.audioFormat.mSampleRate * Double(_self.audioFormat.mBytesPerFrame) * _self.internalIOBufferDuration))
+                print("Computed size of \(buffer.mDataByteSize) but needed ")
+                buffer.mDataByteSize = inNumberFrames * 2
                 var data = Array.init(repeating: 0 as UInt8, count: Int(buffer.mDataByteSize))
                 print("\(_self.readyData.count) available data")
                 if _self.readyData.count > data.count {

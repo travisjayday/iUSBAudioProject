@@ -67,16 +67,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         func connected(sock: Socket) {
             audioStreamer = MuxHALAudioStreamer()
-            func packetRead(data : Data) {
-                var len : UInt32 = UInt32(data.count)
-                let packet = NSMutableData()
-                packet.append(Data([0x69, 0x4, 0x20]))      // append command signature
-                packet.append(Data(bytes: &len, count: 4))  // append payload length
-                packet.append(data)                         // append payload
+            let headerSig = Data([0x69, 0x4, 0x20])
+            var packet = Data(capacity: 2048)
+            func packetRead(pcmPtr : UnsafeMutableRawPointer, pcmLen : Int) {
+                var len : UInt32 = UInt32(pcmLen)
                 
+                packet.removeAll(keepingCapacity: true)
+                packet.append(headerSig)
+                packet.append(Data(bytes: &len, count: 4))
+                packet.append(Data(bytesNoCopy: pcmPtr, count: pcmLen, deallocator: Data.Deallocator.none))
+
                 do {
                     try sock.write(from: packet)
-                    //print("Sent \(packet.count)")
                 } catch {
                     print("Failed to send packet")
                     audioStreamer.endSession()

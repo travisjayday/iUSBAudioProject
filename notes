@@ -14,3 +14,14 @@ sudo mv /var/run/usbmux_real /var/run/usbmuxd
 44100 * 8 bytes / second = 352800 bytes / second
 17640 bytes / 50ms
 7056 bytes / 20ms
+
+we need to arrive to the conclusion that 
+
+IOBufferDuration=0.01160997711122036s --> AudioBufferSize=1024bytes
+
+here's how:
+
+SampleRate=44100samples/s
+1 sample = 1 frame because 1 channel = 2 bytes because 16 bit audio
+
+--> 88200bytes/s * 0.0116... = 1023.99

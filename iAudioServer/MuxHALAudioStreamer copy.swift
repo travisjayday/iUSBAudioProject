@@ -13,12 +13,22 @@ import AudioToolbox
 
 class MuxHALAudioStreamer {
     
-    var packetReady: ((Data) -> Void)?
+    var packetReady: ((UnsafeMutableRawPointer, Int) -> Void)?
     var audioFormat: AudioStreamBasicDescription!
     var audioUnit: AudioComponentInstance!
+    var audioBufferList : UnsafeMutableAudioBufferListPointer!
+    var audioBuffer : AudioBuffer!
+    let debug = false
 
     func endSession() {
-
+        AudioOutputUnitStop(audioUnit)
+        AudioComponentInstanceDispose(audioUnit)
+    }
+    
+    func log(_ s : String) {
+        if debug {
+            print(s)
+        }
     }
     
     func asbdToData(asbd : AudioStreamBasicDescription) -> Data {
@@ -30,7 +40,7 @@ class MuxHALAudioStreamer {
         return data as Data
     }
      
-    func makeSession(_packetReady: @escaping (_ img : Data) -> Void,
+    func makeSession(_packetReady: @escaping (_ ptr : UnsafeMutableRawPointer, _ len : Int) -> Void,
                      _handshakePacketReady: @escaping (_ format : Data) throws -> Void
     ) throws {
         packetReady = _packetReady
@@ -86,8 +96,8 @@ class MuxHALAudioStreamer {
         AudioUnitSetProperty(audioUnit!,
                              kAudioOutputUnitProperty_CurrentDevice,
                              kAudioUnitScope_Global,
-                             0, &inputDevice,
-                             UInt32(MemoryLayout.size(ofValue: inputDevice)))
+                             0, &usbDriverDeviceID,
+                             UInt32(MemoryLayout.size(ofValue: usbDriverDeviceID)))
         var DeviceFormat : AudioStreamBasicDescription = AudioStreamBasicDescription()
        
         var DesiredFormat : AudioStreamBasicDescription = AudioStreamBasicDescription()
@@ -95,7 +105,7 @@ class MuxHALAudioStreamer {
         size = UInt32(MemoryLayout.size(ofValue: DesiredFormat));
 
         //Get the input device format
-       AudioUnitGetProperty (audioUnit,
+        AudioUnitGetProperty (audioUnit,
                                       kAudioUnitProperty_StreamFormat,
                                       kAudioUnitScope_Input,
                                       1,
@@ -109,8 +119,27 @@ class MuxHALAudioStreamer {
         AudioUnitSetProperty(audioUnit!,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
-                             1, &DeviceFormat,
-                             UInt32(MemoryLayout.size(ofValue: DeviceFormat)))
+                             1, &audioFormat,
+                             UInt32(MemoryLayout.size(ofValue: audioFormat)))
+        AudioUnitSetProperty(audioUnit!,
+                             kAudioUnitProperty_StreamFormat,
+                             kAudioUnitScope_Output,
+                             1, &audioFormat,
+                             UInt32(MemoryLayout.size(ofValue: audioFormat)))
+        
+        var internalIOBufferSize = 128
+        AudioUnitSetProperty(audioUnit,
+                             kAudioDevicePropertyBufferFrameSize,
+                             kAudioUnitScope_Global,
+                             1,
+                             &internalIOBufferSize,
+                             UInt32(MemoryLayout.size(ofValue: internalIOBufferSize)))
+ 
+        audioBufferList = AudioBufferList.allocate(maximumBuffers: 1)
+        audioBuffer = AudioBuffer()
+        audioBufferList[0] = audioBuffer
+        audioBufferList[0].mData = nil
+        audioBufferList[0].mDataByteSize = 0
         
         var callbackStruct = AURenderCallbackStruct()
         callbackStruct.inputProcRefCon = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
@@ -121,28 +150,21 @@ class MuxHALAudioStreamer {
               inBusNumber : UInt32,
               inNumberFrames : UInt32,
               ioData : UnsafeMutablePointer<AudioBufferList>?) -> OSStatus in
-            print("Inside audio playback callback")
+           
             let _self = Unmanaged<MuxHALAudioStreamer>.fromOpaque(inRefCon).takeUnretainedValue()
-            var bufferList = AudioBufferList.allocate(maximumBuffers: 2)
-            var buffer = AudioBuffer()
-            buffer.mData = nil
-            buffer.mDataByteSize = inNumberFrames * 2
-            bufferList[0] = buffer
-            var buffer1 = AudioBuffer()
-            buffer1.mData = nil
-            bufferList[1] = buffer1
+
+            _self.audioBufferList[0].mData = nil
+            _self.audioBufferList[0].mDataByteSize = inNumberFrames * 2
  
-            let res = AudioUnitRender(_self.audioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, bufferList.unsafeMutablePointer)
-            print("render sttatus: \(res)")
+            let res = AudioUnitRender(_self.audioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, _self.audioBufferList.unsafeMutablePointer)
+            _self.log("render sttatus: \(res)")
             
             /*inTimeStamp.pointee.mSampleTime += Float64(inNumberFrames)*/
-            
-            print("Got buffer of size \(buffer.mDataByteSize) and data \(buffer.mData)")
-            let p1 = NSData(bytes: bufferList[0].mData, length: Int(bufferList[0].mDataByteSize)) as Data
-            let p2 = NSData(bytes: bufferList[1].mData, length: Int(bufferList[1].mDataByteSize)) as Data
-            _self.packetReady!(p1)
-            
-            print("\(p1[0]) \(p1[1]), \(p1[4]), \(p2[0]), \(p2[10])")
+ 
+            _self.log("Got \(_self.audioBufferList.count) buffer of size \(_self.audioBufferList[0].mDataByteSize) and data \(_self.audioBufferList[0].mData)")
+            // let p1 = NSData(bytes: bufferList[0].mData, length: Int(bufferList[0].mDataByteSize)) as Data
+//            let p2 = NSData(bytes: bufferList[1].mData, length: Int(bufferList[1].mDataByteSize)) as Data
+            _self.packetReady!(_self.audioBufferList[0].mData!, Int(_self.audioBufferList[0].mDataByteSize))
 
             return .zero
         }
