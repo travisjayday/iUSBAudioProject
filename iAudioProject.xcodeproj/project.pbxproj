@@ -11,7 +11,10 @@
 		565C3486258C20E70012ED2D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C3485258C20E70012ED2D /* ContentView.swift */; };
 		565C3488258C20E70012ED2D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 565C3487258C20E70012ED2D /* Assets.xcassets */; };
 		565C348B258C20E70012ED2D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 565C348A258C20E70012ED2D /* Preview Assets.xcassets */; };
-		565CF23C258EA7D800FA4953 /* MuxAudioStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */; };
+		565C9949259A6EC800AFCFE5 /* USBAudioDriver.c in Sources */ = {isa = PBXBuildFile; fileRef = 569E96C72590FB52006EC6BC /* USBAudioDriver.c */; };
+		565C994B259A6EC800AFCFE5 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569E96D02590FBC4006EC6BC /* CoreFoundation.framework */; };
+		565C994D259A6EC800AFCFE5 /* DeviceIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 569E971F2591089A006EC6BC /* DeviceIcon.icns */; };
+		565C996A259A77E000AFCFE5 /* iOSMicDriver-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 565C9969259A77E000AFCFE5 /* iOSMicDriver-Info.plist */; };
 		5694BD0C25979BFB002A6ABA /* MuxHalAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */; };
 		56967149258D7544007AC4E7 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = 56967148258D7544007AC4E7 /* Socket */; };
 		5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5696714B258D756F007AC4E7 /* USBMuxHandler.swift */; };
@@ -22,9 +25,8 @@
 		569E971525910880006EC6BC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 569E971425910880006EC6BC /* Assets.xcassets */; };
 		569E971825910880006EC6BC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 569E971725910880006EC6BC /* Preview Assets.xcassets */; };
 		569E97202591089A006EC6BC /* DeviceIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 569E971F2591089A006EC6BC /* DeviceIcon.icns */; };
-		56C8529125910BA700453CA6 /* MuxHALAudioStreamer copy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C8529025910BA700453CA6 /* MuxHALAudioStreamer copy.swift */; };
+		56C8529125910BA700453CA6 /* MuxHALAudioStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C8529025910BA700453CA6 /* MuxHALAudioStreamer.swift */; };
 		56C8529C2591491000453CA6 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = 56C8529B2591491000453CA6 /* Socket */; };
-		56C8529F25914BD000453CA6 /* MuxAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,19 +43,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		565C3480258C20E70012ED2D /* iAudioProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iAudioProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		565C3480258C20E70012ED2D /* iAudioServer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iAudioServer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		565C3483258C20E70012ED2D /* iAudioServerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iAudioServerApp.swift; sourceTree = "<group>"; };
 		565C3485258C20E70012ED2D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		565C3487258C20E70012ED2D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		565C348A258C20E70012ED2D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		565C348C258C20E70012ED2D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		565C348D258C20E70012ED2D /* iAudioServer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iAudioServer.entitlements; sourceTree = "<group>"; };
-		565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MuxAudioStreamer.swift; path = iAudioServer/MuxAudioStreamer.swift; sourceTree = SOURCE_ROOT; };
-		568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxAudioPlayer.swift; sourceTree = "<group>"; };
+		565C9951259A6EC800AFCFE5 /* iOSMicDriver.driver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSMicDriver.driver; sourceTree = BUILT_PRODUCTS_DIR; };
+		565C9965259A75A200AFCFE5 /* iOSMicDriver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOSMicDriver.h; sourceTree = "<group>"; };
+		565C9969259A77E000AFCFE5 /* iOSMicDriver-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "iOSMicDriver-Info.plist"; sourceTree = "<group>"; };
 		5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxHalAudioPlayer.swift; sourceTree = "<group>"; };
 		5695D3A22592A0C800944361 /* USBAudioDriver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = USBAudioDriver.h; sourceTree = "<group>"; };
 		5696714B258D756F007AC4E7 /* USBMuxHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBMuxHandler.swift; sourceTree = "<group>"; };
-		569E96C62590FB4F006EC6BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		569E96C62590FB4F006EC6BC /* USBAudioDriver-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "USBAudioDriver-Info.plist"; sourceTree = "<group>"; };
 		569E96C72590FB52006EC6BC /* USBAudioDriver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = USBAudioDriver.c; sourceTree = "<group>"; };
 		569E96D02590FBC4006EC6BC /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		569E970E25910880006EC6BC /* iAudioClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iAudioClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -63,7 +66,7 @@
 		569E971725910880006EC6BC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		569E971925910880006EC6BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		569E971F2591089A006EC6BC /* DeviceIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DeviceIcon.icns; sourceTree = "<group>"; };
-		56C8529025910BA700453CA6 /* MuxHALAudioStreamer copy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MuxHALAudioStreamer copy.swift"; sourceTree = "<group>"; };
+		56C8529025910BA700453CA6 /* MuxHALAudioStreamer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuxHALAudioStreamer.swift; sourceTree = "<group>"; };
 		56F9CAA92590F72500845C37 /* DriverKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DriverKit.framework; path = System/Library/Frameworks/DriverKit.framework; sourceTree = SDKROOT; };
 		56F9CB1E2590FA3C00845C37 /* USBAudioDriver.driver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = USBAudioDriver.driver; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -74,6 +77,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				56967149258D7544007AC4E7 /* Socket in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		565C994A259A6EC800AFCFE5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565C994B259A6EC800AFCFE5 /* CoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -110,9 +121,10 @@
 		565C3481258C20E70012ED2D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				565C3480258C20E70012ED2D /* iAudioProject.app */,
+				565C3480258C20E70012ED2D /* iAudioServer.app */,
 				56F9CB1E2590FA3C00845C37 /* USBAudioDriver.driver */,
 				569E970E25910880006EC6BC /* iAudioClient.app */,
+				565C9951259A6EC800AFCFE5 /* iOSMicDriver.driver */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -127,8 +139,7 @@
 				565C348D258C20E70012ED2D /* iAudioServer.entitlements */,
 				565C3489258C20E70012ED2D /* Preview Content */,
 				5696714B258D756F007AC4E7 /* USBMuxHandler.swift */,
-				56C8529025910BA700453CA6 /* MuxHALAudioStreamer copy.swift */,
-				565CF23B258EA7D800FA4953 /* MuxAudioStreamer.swift */,
+				56C8529025910BA700453CA6 /* MuxHALAudioStreamer.swift */,
 			);
 			path = iAudioServer;
 			sourceTree = "<group>";
@@ -144,7 +155,6 @@
 		569E970F25910880006EC6BC /* iAudioClient */ = {
 			isa = PBXGroup;
 			children = (
-				568BE54D258F9EE5008329ED /* MuxAudioPlayer.swift */,
 				569E971025910880006EC6BC /* iAudioClientApp.swift */,
 				569E971225910880006EC6BC /* ContentView.swift */,
 				569E971425910880006EC6BC /* Assets.xcassets */,
@@ -175,10 +185,12 @@
 		56F9CAAB2590F72500845C37 /* USBAudioDriver */ = {
 			isa = PBXGroup;
 			children = (
+				565C9969259A77E000AFCFE5 /* iOSMicDriver-Info.plist */,
 				569E971F2591089A006EC6BC /* DeviceIcon.icns */,
-				569E96C62590FB4F006EC6BC /* Info.plist */,
+				569E96C62590FB4F006EC6BC /* USBAudioDriver-Info.plist */,
 				569E96C72590FB52006EC6BC /* USBAudioDriver.c */,
 				5695D3A22592A0C800944361 /* USBAudioDriver.h */,
+				565C9965259A75A200AFCFE5 /* iOSMicDriver.h */,
 			);
 			path = USBAudioDriver;
 			sourceTree = "<group>";
@@ -186,9 +198,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		565C347F258C20E70012ED2D /* iAudioProject */ = {
+		565C347F258C20E70012ED2D /* iAudioServer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 565C3490258C20E70012ED2D /* Build configuration list for PBXNativeTarget "iAudioProject" */;
+			buildConfigurationList = 565C3490258C20E70012ED2D /* Build configuration list for PBXNativeTarget "iAudioServer" */;
 			buildPhases = (
 				565C347C258C20E70012ED2D /* Sources */,
 				565C347D258C20E70012ED2D /* Frameworks */,
@@ -199,13 +211,30 @@
 			);
 			dependencies = (
 			);
-			name = iAudioProject;
+			name = iAudioServer;
 			packageProductDependencies = (
 				56967148258D7544007AC4E7 /* Socket */,
 			);
 			productName = iAudioServer;
-			productReference = 565C3480258C20E70012ED2D /* iAudioProject.app */;
+			productReference = 565C3480258C20E70012ED2D /* iAudioServer.app */;
 			productType = "com.apple.product-type.application";
+		};
+		565C9947259A6EC800AFCFE5 /* iOSMicDriver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 565C994E259A6EC800AFCFE5 /* Build configuration list for PBXNativeTarget "iOSMicDriver" */;
+			buildPhases = (
+				565C9948259A6EC800AFCFE5 /* Sources */,
+				565C994A259A6EC800AFCFE5 /* Frameworks */,
+				565C994C259A6EC800AFCFE5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iOSMicDriver;
+			productName = USBAudioDriver;
+			productReference = 565C9951259A6EC800AFCFE5 /* iOSMicDriver.driver */;
+			productType = "com.apple.product-type.bundle";
 		};
 		569E970D25910880006EC6BC /* iAudioClient */ = {
 			isa = PBXNativeTarget;
@@ -280,9 +309,10 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				565C347F258C20E70012ED2D /* iAudioProject */,
+				565C347F258C20E70012ED2D /* iAudioServer */,
 				56F9CB1D2590FA3C00845C37 /* USBAudioDriver */,
 				569E970D25910880006EC6BC /* iAudioClient */,
+				565C9947259A6EC800AFCFE5 /* iOSMicDriver */,
 			);
 		};
 /* End PBXProject section */
@@ -294,6 +324,15 @@
 			files = (
 				565C348B258C20E70012ED2D /* Preview Assets.xcassets in Resources */,
 				565C3488258C20E70012ED2D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		565C994C259A6EC800AFCFE5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565C996A259A77E000AFCFE5 /* iOSMicDriver-Info.plist in Resources */,
+				565C994D259A6EC800AFCFE5 /* DeviceIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,11 +360,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				565CF23C258EA7D800FA4953 /* MuxAudioStreamer.swift in Sources */,
 				565C3486258C20E70012ED2D /* ContentView.swift in Sources */,
-				56C8529125910BA700453CA6 /* MuxHALAudioStreamer copy.swift in Sources */,
+				56C8529125910BA700453CA6 /* MuxHALAudioStreamer.swift in Sources */,
 				5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */,
 				565C3484258C20E70012ED2D /* iAudioServerApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		565C9948259A6EC800AFCFE5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565C9949259A6EC800AFCFE5 /* USBAudioDriver.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -336,7 +382,6 @@
 				569E971325910880006EC6BC /* ContentView.swift in Sources */,
 				569E971125910880006EC6BC /* iAudioClientApp.swift in Sources */,
 				5694BD0C25979BFB002A6ABA /* MuxHalAudioPlayer.swift in Sources */,
-				56C8529F25914BD000453CA6 /* MuxAudioPlayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,6 +555,40 @@
 			};
 			name = Release;
 		};
+		565C994F259A6EC800AFCFE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					TARGET_IOSMICDRIVER,
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "USBAudioDriver/iOSMicDriver-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.iOSMicDriver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = driver;
+			};
+			name = Debug;
+		};
+		565C9950259A6EC800AFCFE5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = TARGET_IOSMICDRIVER;
+				INFOPLIST_FILE = "USBAudioDriver/iOSMicDriver-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.iOSMicDriver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = driver;
+			};
+			name = Release;
+		};
 		569E971B25910880006EC6BC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -562,7 +641,12 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = USBAudioDriver/Info.plist;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					TARGET_USBAUDIODRIVER,
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "USBAudioDriver/USBAudioDriver-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.USBAudioDriver;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -576,7 +660,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = USBAudioDriver/Info.plist;
+				GCC_PREPROCESSOR_DEFINITIONS = TARGET_USBAUDIODRIVER;
+				INFOPLIST_FILE = "USBAudioDriver/USBAudioDriver-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tzgames.audio.USBAudioDriver;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -597,11 +682,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		565C3490258C20E70012ED2D /* Build configuration list for PBXNativeTarget "iAudioProject" */ = {
+		565C3490258C20E70012ED2D /* Build configuration list for PBXNativeTarget "iAudioServer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				565C3491258C20E70012ED2D /* Debug */,
 				565C3492258C20E70012ED2D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		565C994E259A6EC800AFCFE5 /* Build configuration list for PBXNativeTarget "iOSMicDriver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565C994F259A6EC800AFCFE5 /* Debug */,
+				565C9950259A6EC800AFCFE5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

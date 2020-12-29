@@ -124,18 +124,18 @@ enum
 // multiple devices were supported, this state would need to be encapsulated in one or more structs
 // so that each object's state can be tracked individually.
 // Note also that we share a single mutex across all objects to be thread safe for the same reason.
-#define                         kPlugIn_BundleID                "com.tzgames.audio.USBAudioDriver"
+#define                         kPlugIn_BundleID                "com.tzgames.audio.iOSMicDriver"
 static pthread_mutex_t          gPlugIn_StateMutex              = PTHREAD_MUTEX_INITIALIZER;
 static UInt32                   gPlugIn_RefCount                = 0;
 static AudioServerPlugInHostRef gPlugIn_Host                    = NULL;
 
-#define                         kBox_UID                        "USBAudioBox_UID"
+#define                         kBox_UID                        "iOSMicBox_UID"
 static CFStringRef              gBox_Name                       = NULL;
 static Boolean                  gBox_Acquired                   = true;
 
-#define                         kDevice_UID                     "USBAudioDevice_UID"
-#define                         kDevice_ModelUID                "USBAudioDevice_ModelUID"
-#define                         kDevice_HumanName               "USB Audio Interface"
+#define                         kDevice_UID                     "iOSMicDevice_UID"
+#define                         kDevice_ModelUID                "iOSMicDevice_ModelUID"
+#define                         kDevice_HumanName               "iOS Microphone Device"
 #define                         kDevice_Manufacturer            "Ape Inc."
 
 static pthread_mutex_t          gDevice_IOMutex                 = PTHREAD_MUTEX_INITIALIZER;

@@ -7,17 +7,45 @@
 		<key>USBAudioDriver.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>3</integer>
 		</dict>
 		<key>iAudioClient.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
-		<key>iAudioProject.xcscheme_^#shared#^_</key>
+		<key>iAudioServer.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>0</integer>
+		</dict>
+		<key>iOSMicDriver.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>2</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>565C347F258C20E70012ED2D</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>565C9947259A6EC800AFCFE5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>569E970D25910880006EC6BC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>56F9CB1D2590FA3C00845C37</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>
