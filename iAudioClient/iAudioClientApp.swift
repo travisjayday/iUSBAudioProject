@@ -34,10 +34,15 @@ struct iAudioClientApp: App {
     }
 }
     
+/// Class in charge of receiving and transmitting audio data 
 class ClientMain  {
+    
+    /// The MuxHALAudioPlayer packets get piped into
     var player : MuxHALAudioPlayer!
     var sock : Socket!
     var appState : AppState!
+    var debug = false
+    var pcmBuf : Data!
     
     init(appState : AppState) {
         self.appState = appState
@@ -53,6 +58,10 @@ class ClientMain  {
         return restored
     }
     
+    func log(_ s : String) {
+        if debug { print(s) }
+    }
+    
     func startListening() throws {
    
         sock = try Socket.create(family: .inet, type: .stream, proto: .tcp)
@@ -65,8 +74,9 @@ class ClientMain  {
         print("Receifved: \(s)")
       
         var currentAudioFormat : AudioStreamBasicDescription?
+        var header: [Int8] = [Int8](repeating: 0, count: 8)
+        pcmBuf = Data(capacity: 2048)
         while (true) {
-            var header: [Int8] = [Int8](repeating: 0, count: 8)
             if (sock.remoteConnectionClosed) { break; }
             try sock.read(into: &header, bufSize: 8, truncate: true)
 
@@ -81,21 +91,23 @@ class ClientMain  {
                     try sock.read(into: $0, bufSize: payloadSize, truncate: true)
                 })
                 currentAudioFormat = dataToASBD(data: asbdBuf as NSData)
-                print("Received handshake with audio format \(currentAudioFormat)")
-                print("payload size was \(payloadSize) and resulting data ws \(asbdBuf.count)")
+                log("Received handshake with audio format \(currentAudioFormat)")
+                log("payload size was \(payloadSize) and resulting data ws \(asbdBuf.count)")
                 player = MuxHALAudioPlayer()
             }
             
             // we received a valid PCM packet signature
             if header[0] == 0x69 && header[1] == 0x4 && header[2] == 0x20 {
-                var pcmBuf = Data.init(count: Int(payloadSize))
+                log("About to play PCM packety of size \(payloadSize)")
+                pcmBuf.removeAll(keepingCapacity: true)
+                pcmBuf.resetBytes(in: 0..<payloadSize)
                 try pcmBuf.withUnsafeMutableBytes({
                     try sock.read(into: $0, bufSize: payloadSize, truncate: true)
                 })
+                log("about to enqueue packet")
                 player.playPacket(pcm: pcmBuf, format: currentAudioFormat!)
             }
         }
-
         player.stopPlaying()
         showAlert()
     }

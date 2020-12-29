@@ -24,4 +24,9 @@ here's how:
 SampleRate=44100samples/s
 1 sample = 1 frame because 1 channel = 2 bytes because 16 bit audio
 
---> 88200bytes/s * 0.0116... = 1023.99
+--> 88200bytes/s * 0.0116...s = 1023.99 bytes
+
+--> 768 bytes * (1 / 88200)s/bytes = 8ms latency
+    512 bytes * (1 / 88200)s/bytes = 5.8ms latency
+    256 ...			   = 2.9ms latency
+

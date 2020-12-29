@@ -14,13 +14,15 @@ class MuxHALAudioPlayer {
     
     var audioFormat: AudioStreamBasicDescription!
     var audioUnit : AudioComponentInstance!
-    var readyData : Data!
+    var sRingbuffer : [UInt8]!
+    var sRingbufferWO = 0
+    var sRingbufferRO = 0
     var timeStart : Double = 0
     var bytesReceived : Int = 0
     let semaphore = DispatchSemaphore(value: 1)
     var internalIOBufferDuration : Double = 0.0
     var pcmBuf : Array<UInt8>!
-    var debug = false
+    var debug = true
     
     /// Print wrapper.
     func log(_ s : String) {
@@ -32,6 +34,7 @@ class MuxHALAudioPlayer {
         print("SPEED: \(speed)bytes/s");
         AudioOutputUnitStop(audioUnit)
         AudioComponentInstanceDispose(audioUnit)
+        initted = false
     }
     
     func playPacket(pcm: Data, format: AudioStreamBasicDescription) {
@@ -39,17 +42,35 @@ class MuxHALAudioPlayer {
             initted = true
             audioFormat = format
             initPlayFromHelloPacket()
-            readyData = Data()
+            sRingbuffer = Array.init(repeating: 0 as UInt8, count: Int(8192 * 20))
             timeStart = Date().timeIntervalSince1970
             return
         }
-        var newBytes = [UInt8](pcm)
-        bytesReceived += newBytes.count
-        let newBytesCount = newBytes.count
-        
+        bytesReceived += pcm.count
+
         semaphore.wait()
-        readyData.append(pcm)
+        
+        // inclusive of current byte pointed to by WO
+        let spaceUntilBufferEnd = sRingbuffer.count - sRingbufferWO
+        if pcm.count < spaceUntilBufferEnd {
+            pcm.withUnsafeBytes({pbp in sRingbuffer.withUnsafeMutableBytes({rbp in
+                memcpy(rbp.baseAddress?.advanced(by: sRingbufferWO), pbp.baseAddress, pcm.count)
+            })})
+            sRingbufferWO += pcm.count
+        } else {
+            pcm.withUnsafeBytes({pbp in sRingbuffer.withUnsafeMutableBytes({rbp in
+                memcpy(rbp.baseAddress?.advanced(by: sRingbufferWO),
+                       pbp.baseAddress,
+                       spaceUntilBufferEnd)
+                memcpy(rbp.baseAddress,
+                       pbp.baseAddress?.advanced(by: spaceUntilBufferEnd),
+                       pcm.count - spaceUntilBufferEnd)
+                sRingbufferWO = pcm.count - spaceUntilBufferEnd
+            })})
+        }
+        sRingbufferWO %= sRingbuffer.count
         semaphore.signal()
+
     }
 
     func initPlayFromHelloPacket() {
@@ -94,7 +115,7 @@ class MuxHALAudioPlayer {
 
         do {
             let ses = AVAudioSession.sharedInstance()
-            try ses.setPreferredIOBufferDuration(TimeInterval(0.01))
+            try ses.setPreferredIOBufferDuration(TimeInterval(0.005))
             self.internalIOBufferDuration = ses.ioBufferDuration
         }
         catch {
@@ -107,13 +128,13 @@ class MuxHALAudioPlayer {
         var callbackStruct = AURenderCallbackStruct()
         callbackStruct.inputProcRefCon = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
         callbackStruct.inputProc = {
-             (inRefCon : UnsafeMutableRawPointer,
-              ioActionFlags : UnsafeMutablePointer<AudioUnitRenderActionFlags>,
-              inTimeStamp : UnsafePointer<AudioTimeStamp>,
-              inBusNumber : UInt32,
+             (inRefCon       : UnsafeMutableRawPointer,
+              ioActionFlags  : UnsafeMutablePointer<AudioUnitRenderActionFlags>,
+              inTimeStamp    : UnsafePointer<AudioTimeStamp>,
+              inBusNumber    : UInt32,
               inNumberFrames : UInt32,
-              ioData : UnsafeMutablePointer<AudioBufferList>?) -> OSStatus in
-            //print("Inside audio playback callback need to fill \(inNumberFrames) of data")
+              ioData         : UnsafeMutablePointer<AudioBufferList>?) -> OSStatus in
+            
             let _self = Unmanaged<MuxHALAudioPlayer>.fromOpaque(inRefCon).takeUnretainedValue()
             if ioData == nil {
                 return .zero
@@ -127,11 +148,54 @@ class MuxHALAudioPlayer {
             buffer.mDataByteSize = UInt32(bufferSize)
             buffer.mNumberChannels = 1
             
-
-            _self.log("\(_self.readyData.count) available data")
+            _self.log(" available data. Need to fill" +
+                "\(inNumberFrames) frames of data")
             var data = _self.pcmBuf!
             
             
+            if _self.sRingbufferWO > _self.sRingbufferRO {
+                let freshBytes = Int(_self.sRingbufferWO - _self.sRingbufferRO)
+                print("Distance between WO and RO is = \(freshBytes)")
+                //_self.sRingbufferRO = _self.sRingbufferWO - bufferSize
+
+                if freshBytes >= bufferSize {
+                    _self.sRingbuffer.withUnsafeMutableBytes({rbp in
+                        _self.pcmBuf.withUnsafeMutableBytes({pbp in
+                            memcpy(pbp.baseAddress, rbp.baseAddress!.advanced(by: _self.sRingbufferRO), bufferSize)
+                        })
+                    })
+                    _self.sRingbufferRO += bufferSize
+                }
+                else  {
+                    _self.sRingbuffer.withUnsafeMutableBytes({rbp in
+                        _self.pcmBuf.withUnsafeMutableBytes({pbp in
+                            memcpy(pbp.baseAddress, rbp.baseAddress!.advanced(by: _self.sRingbufferRO), bufferSize - freshBytes)
+                        })
+                    })
+                    _self.sRingbufferRO += bufferSize - freshBytes
+                }
+                if freshBytes >= Int(2 * Double(bufferSize))  {
+                    _self.sRingbufferRO += Int(round(0.25 * Double(bufferSize)))
+                }
+            }
+            else {
+                let spaceUntilBufferEnd = _self.sRingbuffer.count - _self.sRingbufferRO
+                _self.sRingbuffer.withUnsafeMutableBytes({rbp in
+                    _self.pcmBuf.withUnsafeMutableBytes({pbp in
+                        if spaceUntilBufferEnd >= bufferSize {
+                            memcpy(pbp.baseAddress, rbp.baseAddress!.advanced(by: _self.sRingbufferRO), bufferSize)
+                            _self.sRingbufferRO += bufferSize
+                        }
+                        else {
+                            memcpy(pbp.baseAddress, rbp.baseAddress!.advanced(by: _self.sRingbufferRO), spaceUntilBufferEnd)
+                            memcpy(pbp.baseAddress?.advanced(by: spaceUntilBufferEnd), rbp.baseAddress, bufferSize - spaceUntilBufferEnd)
+                            _self.sRingbufferRO = bufferSize - spaceUntilBufferEnd
+                        }
+                    })
+                })
+            }
+            _self.sRingbufferRO %= _self.sRingbuffer.count
+            /*
             let psi = data.startIndex
             let rsi = _self.readyData.startIndex
             if _self.readyData.count > bufferSize {
@@ -144,7 +208,7 @@ class MuxHALAudioPlayer {
                 data.resetBytes(in: psi ..< psi+bufferSize)
                 _self.log("not enough ready dat")
                 
-            }
+            }*/
             
             _self.log("Filling \(_self.pcmBuf.count)")
             memcpy(buffer.mData, &data, bufferSize)

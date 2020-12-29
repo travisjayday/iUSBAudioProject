@@ -61,9 +61,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "565C347F258C20E70012ED2D"
-            BuildableName = "iAudioServer.app"
-            BlueprintName = "iAudioServer"
+            BlueprintIdentifier = "569E970D25910880006EC6BC"
+            BuildableName = "iAudioClient.app"
+            BlueprintName = "iAudioClient"
             ReferencedContainer = "container:iAudioProject.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

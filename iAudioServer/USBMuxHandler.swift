@@ -76,6 +76,10 @@ class USBMuxHandler: NSObject {
 
         // read remaining payload into memory
         let payloadSize = Int(packetSize) - kUSBMuxHeaderSize
+        if payloadSize < 10 {
+            throw NSError()
+        }
+        
         var rawPayload = [Int8](repeating: 0, count: payloadSize)
         try sock.read(into: &rawPayload, bufSize: payloadSize, truncate: true)
         let payloadData = NSData(bytes: rawPayload, length: payloadSize)
@@ -196,7 +200,7 @@ class USBMuxHandler: NSObject {
                         
                         // sets status to either connected_active
                         // or connected_inactive
-                        
+                        sleep(2)
                         let plist = try sendCmd(sock, MuxPacket("ListDevices"))
                         let devices = plist["DeviceList"] as! NSArray
                         print(devices)
@@ -218,7 +222,8 @@ class USBMuxHandler: NSObject {
                 }
             }
         } catch {
-            print("error: \(error)")
+//            print("error: \(error)")
+            succ = false
         }
         print("Finished tryConnectToDevice()")
         return succ
