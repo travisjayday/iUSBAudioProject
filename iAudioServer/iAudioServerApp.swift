@@ -40,6 +40,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var contentView: ContentView!
     var muxHandler: USBMuxHandler!
     var audioStreamer: MuxHALAudioStreamer!
+    var useMic : Bool = true
     
     func tryConnectToDeviceLoop() {
         DispatchQueue.global(qos: .utility).async {
@@ -103,6 +104,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         let kHeaderSig    = Data([0x69, 0x4, 0x20, 0]) // Header PCM Data Signature
         let kHandshakeSig = Data([0x69, 0x4, 0x19, 0]) // Header Handshak Signature
+        let kHandMicSig   = Data([0x69, 0x4, 0x21, 0]) // Header Handshak Signature
         var packet        = Data(capacity: 2048)    // Preallocate Packet Buffer
         
         /// Called when audioStreamer queries current audio configuration and
@@ -113,9 +115,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         func handshakePacketReady(absd : Data) throws {
             var len : UInt32 = UInt32(absd.count)
             packet.removeAll(keepingCapacity: true)
-            packet.append(kHandshakeSig)                 // append command sig
+            if useMic { packet.append(kHandMicSig)   }
+            else      { packet.append(kHandshakeSig) }  // append command sig
             packet.append(Data(bytes: &len, count: 4))  // append payload length
             packet.append(absd)                         // append payload
+            print("Sending handshake \(packet[0]) \(packet[1]) \(packet[2])" +
+                " \(packet[3]) \(packet[4]) \(packet[5])")
+            print("Handshake size: \(packet.count). Embedded payload size: \(len)")
             try sock.write(from: packet)
         }
         
@@ -132,7 +138,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             packet.append(Data(bytes: &len, count: 4))
             packet.append(Data(bytesNoCopy: pcmPtr, count: pcmLen,
                                deallocator: Data.Deallocator.none))
-
+            //print("Sending packet \(packet[0]) \(packet[1]) \(packet[2])" +
+                //" \(packet[3]) \(packet[4]) \(packet[5])")
+            //print("Packet size: \(packet.count). Embedded payload size: \(len)")
             do {
                 try sock.write(from: packet)
             } catch {
@@ -146,6 +154,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         /// Start audio streaming session
         try audioStreamer.makeSession(
             _packetReady: packetReady,
-            _handshakePacketReady: handshakePacketReady)
+            _handshakePacketReady: handshakePacketReady,
+            _useMic: useMic)
+        
+        func onReceived(bytes : UnsafeMutablePointer<Int8>, len : Int) {
+            print("about to enqueue IOS MIC packet")
+            audioStreamer.micAuhal.enqueuePCM(bytes, len)
+        }
+        
+        let rec = PCMReceiver(sock, dataCallback: onReceived, handshakeCallback: nil)
+        try rec.receive()
     }
 }

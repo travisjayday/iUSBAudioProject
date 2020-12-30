@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		560C498B259BCE8B0010E4F5 /* AUHALAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568A4D21259BCE32003018BC /* AUHALAudioRecorder.swift */; };
+		560C498F259BCE8D0010E4F5 /* AUHALAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568A4D16259BCE1D003018BC /* AUHALAudioPlayer.swift */; };
 		565C3484258C20E70012ED2D /* iAudioServerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C3483258C20E70012ED2D /* iAudioServerApp.swift */; };
 		565C3486258C20E70012ED2D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C3485258C20E70012ED2D /* ContentView.swift */; };
 		565C3488258C20E70012ED2D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 565C3487258C20E70012ED2D /* Assets.xcassets */; };
@@ -15,7 +17,11 @@
 		565C994B259A6EC800AFCFE5 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569E96D02590FBC4006EC6BC /* CoreFoundation.framework */; };
 		565C994D259A6EC800AFCFE5 /* DeviceIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 569E971F2591089A006EC6BC /* DeviceIcon.icns */; };
 		565C996A259A77E000AFCFE5 /* iOSMicDriver-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 565C9969259A77E000AFCFE5 /* iOSMicDriver-Info.plist */; };
-		5694BD0C25979BFB002A6ABA /* MuxHalAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */; };
+		568A4D17259BCE1D003018BC /* AUHALAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568A4D16259BCE1D003018BC /* AUHALAudioPlayer.swift */; };
+		568A4D22259BCE32003018BC /* AUHALAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568A4D21259BCE32003018BC /* AUHALAudioRecorder.swift */; };
+		5692C065259CEAAC00853D56 /* PCMReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5692C064259CEAAC00853D56 /* PCMReceiver.swift */; };
+		5692C066259CEAAC00853D56 /* PCMReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5692C064259CEAAC00853D56 /* PCMReceiver.swift */; };
+		5694BD0C25979BFB002A6ABA /* ClientAUHALInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5694BD0B25979BFB002A6ABA /* ClientAUHALInterface.swift */; };
 		56967149258D7544007AC4E7 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = 56967148258D7544007AC4E7 /* Socket */; };
 		5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5696714B258D756F007AC4E7 /* USBMuxHandler.swift */; };
 		569E96C82590FB52006EC6BC /* USBAudioDriver.c in Sources */ = {isa = PBXBuildFile; fileRef = 569E96C72590FB52006EC6BC /* USBAudioDriver.c */; };
@@ -53,7 +59,10 @@
 		565C9951259A6EC800AFCFE5 /* iOSMicDriver.driver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSMicDriver.driver; sourceTree = BUILT_PRODUCTS_DIR; };
 		565C9965259A75A200AFCFE5 /* iOSMicDriver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOSMicDriver.h; sourceTree = "<group>"; };
 		565C9969259A77E000AFCFE5 /* iOSMicDriver-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "iOSMicDriver-Info.plist"; sourceTree = "<group>"; };
-		5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxHalAudioPlayer.swift; sourceTree = "<group>"; };
+		568A4D16259BCE1D003018BC /* AUHALAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AUHALAudioPlayer.swift; path = Common/AUHALAudioPlayer.swift; sourceTree = "<group>"; };
+		568A4D21259BCE32003018BC /* AUHALAudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AUHALAudioRecorder.swift; path = Common/AUHALAudioRecorder.swift; sourceTree = "<group>"; };
+		5692C064259CEAAC00853D56 /* PCMReceiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PCMReceiver.swift; path = Common/PCMReceiver.swift; sourceTree = "<group>"; };
+		5694BD0B25979BFB002A6ABA /* ClientAUHALInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientAUHALInterface.swift; sourceTree = "<group>"; };
 		5695D3A22592A0C800944361 /* USBAudioDriver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = USBAudioDriver.h; sourceTree = "<group>"; };
 		5696714B258D756F007AC4E7 /* USBMuxHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBMuxHandler.swift; sourceTree = "<group>"; };
 		569E96C62590FB4F006EC6BC /* USBAudioDriver-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "USBAudioDriver-Info.plist"; sourceTree = "<group>"; };
@@ -110,6 +119,9 @@
 		565C3477258C20E70012ED2D = {
 			isa = PBXGroup;
 			children = (
+				5692C064259CEAAC00853D56 /* PCMReceiver.swift */,
+				568A4D21259BCE32003018BC /* AUHALAudioRecorder.swift */,
+				568A4D16259BCE1D003018BC /* AUHALAudioPlayer.swift */,
 				565C3482258C20E70012ED2D /* iAudioServer */,
 				56F9CAAB2590F72500845C37 /* USBAudioDriver */,
 				569E970F25910880006EC6BC /* iAudioClient */,
@@ -159,8 +171,8 @@
 				569E971225910880006EC6BC /* ContentView.swift */,
 				569E971425910880006EC6BC /* Assets.xcassets */,
 				569E971925910880006EC6BC /* Info.plist */,
+				5694BD0B25979BFB002A6ABA /* ClientAUHALInterface.swift */,
 				569E971625910880006EC6BC /* Preview Content */,
-				5694BD0B25979BFB002A6ABA /* MuxHalAudioPlayer.swift */,
 			);
 			path = iAudioClient;
 			sourceTree = "<group>";
@@ -360,10 +372,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				560C498F259BCE8D0010E4F5 /* AUHALAudioPlayer.swift in Sources */,
+				560C498B259BCE8B0010E4F5 /* AUHALAudioRecorder.swift in Sources */,
 				565C3486258C20E70012ED2D /* ContentView.swift in Sources */,
 				56C8529125910BA700453CA6 /* MuxHALAudioStreamer.swift in Sources */,
 				5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */,
 				565C3484258C20E70012ED2D /* iAudioServerApp.swift in Sources */,
+				5692C065259CEAAC00853D56 /* PCMReceiver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,9 +394,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				568A4D22259BCE32003018BC /* AUHALAudioRecorder.swift in Sources */,
+				568A4D17259BCE1D003018BC /* AUHALAudioPlayer.swift in Sources */,
 				569E971325910880006EC6BC /* ContentView.swift in Sources */,
 				569E971125910880006EC6BC /* iAudioClientApp.swift in Sources */,
-				5694BD0C25979BFB002A6ABA /* MuxHalAudioPlayer.swift in Sources */,
+				5694BD0C25979BFB002A6ABA /* ClientAUHALInterface.swift in Sources */,
+				5692C066259CEAAC00853D56 /* PCMReceiver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

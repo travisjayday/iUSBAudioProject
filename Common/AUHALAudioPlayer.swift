@@ -8,6 +8,10 @@
 import Foundation
 import AVFoundation
 
+let kAudioSystemInputBus : UInt32 = 1;    // input bus element on AUHAL
+let kAudioSystemOutputBus : UInt32 = 0;   // output bus element on the AUHAL
+
+
 class AUHALAudioPlayer {
     var audioUnit : AudioComponentInstance!
     var sRingbuffer : [UInt8]!
@@ -16,7 +20,7 @@ class AUHALAudioPlayer {
     let semaphore = DispatchSemaphore(value: 1)
     var outAudioF: AudioStreamBasicDescription!
     var pcmBuf : Array<UInt8>!
-    var debug = true
+    var debug = false
     var initted = false
     
     /// Print wrapper.
@@ -25,31 +29,31 @@ class AUHALAudioPlayer {
     }
     
     func initUnit(unit: AudioComponentInstance, outFormat: AudioStreamBasicDescription) {
-        sRingbuffer = Array.init(repeating: 0 as UInt8, count: Int(8192 * 20))
+        sRingbuffer = Array.init(repeating: 0 as UInt8, count: Int(8192 * 300))
         audioUnit = unit
         outAudioF = outFormat
     }
     
-    func enqueuePCM(pcm : Data) {
+    func enqueuePCM(_ pcm : UnsafeMutablePointer<Int8>, _ len : Int) {
         semaphore.wait()
         
         // inclusive of current byte pointed to by WO
         let spaceUntilBufferEnd = sRingbuffer.count - sRingbufferWO
-        if pcm.count < spaceUntilBufferEnd {
-            pcm.withUnsafeBytes({pbp in sRingbuffer.withUnsafeMutableBytes({rbp in
-                memcpy(rbp.baseAddress?.advanced(by: sRingbufferWO), pbp.baseAddress, pcm.count)
-            })})
-            sRingbufferWO += pcm.count
+        if len < spaceUntilBufferEnd {
+            sRingbuffer.withUnsafeMutableBytes({rbp in
+                memcpy(rbp.baseAddress?.advanced(by: sRingbufferWO), pcm, len)
+            })
+            sRingbufferWO += len
         } else {
-            pcm.withUnsafeBytes({pbp in sRingbuffer.withUnsafeMutableBytes({rbp in
+            sRingbuffer.withUnsafeMutableBytes({rbp in
                 memcpy(rbp.baseAddress?.advanced(by: sRingbufferWO),
-                       pbp.baseAddress,
+                       pcm,
                        spaceUntilBufferEnd)
                 memcpy(rbp.baseAddress,
-                       pbp.baseAddress?.advanced(by: spaceUntilBufferEnd),
-                       pcm.count - spaceUntilBufferEnd)
-                sRingbufferWO = pcm.count - spaceUntilBufferEnd
-            })})
+                       pcm.advanced(by: spaceUntilBufferEnd),
+                       len - spaceUntilBufferEnd)
+                sRingbufferWO = len - spaceUntilBufferEnd
+            })
         }
         sRingbufferWO %= sRingbuffer.count
         semaphore.signal()
@@ -84,14 +88,15 @@ class AUHALAudioPlayer {
             buffer.mDataByteSize = UInt32(bufferSize)
             buffer.mNumberChannels = 1
             
-            _self.log(" available data. Need to fill" +
-                "\(inNumberFrames) frames of data")
+            // print("NEED TO FILL DATA")
+            //_self.log(" available data. Need to fill" +
+                //"\(inNumberFrames) frames of data")
             var data = _self.pcmBuf!
             
-            
-            if _self.sRingbufferWO > _self.sRingbufferRO {
+            // write offet is ahead of read offset. this is good
+            if _self.sRingbufferWO >= _self.sRingbufferRO {
                 let freshBytes = Int(_self.sRingbufferWO - _self.sRingbufferRO)
-                print("Distance between WO and RO is = \(freshBytes)")
+                //print("Distance between WO and RO is = \(freshBytes)")
                 //_self.sRingbufferRO = _self.sRingbufferWO - bufferSize
 
                 if freshBytes >= bufferSize {
@@ -103,19 +108,26 @@ class AUHALAudioPlayer {
                     _self.sRingbufferRO += bufferSize
                 }
                 else  {
-                    _self.sRingbuffer.withUnsafeMutableBytes({rbp in
+                    //print("NOT ENOUGH BUFFER SPACE")
+                    /*_self.sRingbuffer.withUnsafeMutableBytes({rbp in
                         _self.pcmBuf.withUnsafeMutableBytes({pbp in
                             memcpy(pbp.baseAddress, rbp.baseAddress!.advanced(by: _self.sRingbufferRO), bufferSize - freshBytes)
                         })
                     })
-                    _self.sRingbufferRO += bufferSize - freshBytes
+                    _self.sRingbufferRO += bufferSize - freshBytes*/
                 }
                 if freshBytes >= Int(2 * Double(bufferSize))  {
                     _self.sRingbufferRO += Int(round(0.25 * Double(bufferSize)))
                 }
+                if freshBytes >= Int(4 * Double(bufferSize))  {
+                    _self.sRingbufferRO += Int(round(1 * Double(bufferSize)))
+                }
             }
+            // read offet is ahead of write offset. this is bad
             else {
+                _self.log("Read offset iS BEHIND")
                 let spaceUntilBufferEnd = _self.sRingbuffer.count - _self.sRingbufferRO
+                //print("Space till buffer end: \(spaceUntilBufferEnd), \(_self.sRingbufferRO), \(_self.sRingbufferWO)")
                 _self.sRingbuffer.withUnsafeMutableBytes({rbp in
                     _self.pcmBuf.withUnsafeMutableBytes({pbp in
                         if spaceUntilBufferEnd >= bufferSize {
@@ -123,7 +135,10 @@ class AUHALAudioPlayer {
                             _self.sRingbufferRO += bufferSize
                         }
                         else {
+                            _self.log("BUFFER JUMP WRAP")
+                            // copy tail end of ringbuffer into first half of active buffer
                             memcpy(pbp.baseAddress, rbp.baseAddress!.advanced(by: _self.sRingbufferRO), spaceUntilBufferEnd)
+                            // copy beginning of ring buffer into into second half of active buffer
                             memcpy(pbp.baseAddress?.advanced(by: spaceUntilBufferEnd), rbp.baseAddress, bufferSize - spaceUntilBufferEnd)
                             _self.sRingbufferRO = bufferSize - spaceUntilBufferEnd
                         }
@@ -132,7 +147,9 @@ class AUHALAudioPlayer {
             }
             _self.sRingbufferRO %= _self.sRingbuffer.count
        
-            _self.log("Filling \(_self.pcmBuf.count)")
+            /*_self.log("Filling audio output buffer with data " +
+                    "\(_self.pcmBuf[0]), \(_self.pcmBuf[1]), \(_self.pcmBuf[2])" +
+                    ", \(_self.pcmBuf[3])")*/
             memcpy(buffer.mData, &data, bufferSize)
             
             if abl.count == 2 {
