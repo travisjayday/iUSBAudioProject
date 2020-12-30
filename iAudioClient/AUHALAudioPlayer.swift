@@ -1,53 +1,36 @@
 //
-//  MuxHalAudioPlayer.swift
+//  AUHALAudioPlayer.swift
 //  iAudioClient
 //
-//  Created by Travis Ziegler on 12/26/20.
+//  Created by Travis Ziegler on 12/29/20.
 //
 
 import Foundation
 import AVFoundation
 
-class MuxHALAudioPlayer {
-
-    var initted = false
-    
-    var audioFormat: AudioStreamBasicDescription!
+class AUHALAudioPlayer {
     var audioUnit : AudioComponentInstance!
     var sRingbuffer : [UInt8]!
     var sRingbufferWO = 0
     var sRingbufferRO = 0
-    var timeStart : Double = 0
-    var bytesReceived : Int = 0
     let semaphore = DispatchSemaphore(value: 1)
-    var internalIOBufferDuration : Double = 0.0
+    var outAudioF: AudioStreamBasicDescription!
     var pcmBuf : Array<UInt8>!
     var debug = true
+    var initted = false
     
     /// Print wrapper.
     func log(_ s : String) {
         if debug { print(s) }
     }
     
-    func stopPlaying() {
-        let speed = (Double(bytesReceived) / (Date().timeIntervalSince1970 - timeStart))
-        print("SPEED: \(speed)bytes/s");
-        AudioOutputUnitStop(audioUnit)
-        AudioComponentInstanceDispose(audioUnit)
-        initted = false
+    func initUnit(unit: AudioComponentInstance, outFormat: AudioStreamBasicDescription) {
+        sRingbuffer = Array.init(repeating: 0 as UInt8, count: Int(8192 * 20))
+        audioUnit = unit
+        outAudioF = outFormat
     }
     
-    func playPacket(pcm: Data, format: AudioStreamBasicDescription) {
-        if !initted {
-            initted = true
-            audioFormat = format
-            initPlayFromHelloPacket()
-            sRingbuffer = Array.init(repeating: 0 as UInt8, count: Int(8192 * 20))
-            timeStart = Date().timeIntervalSince1970
-            return
-        }
-        bytesReceived += pcm.count
-
+    func enqueuePCM(pcm : Data) {
         semaphore.wait()
         
         // inclusive of current byte pointed to by WO
@@ -70,60 +53,13 @@ class MuxHALAudioPlayer {
         }
         sRingbufferWO %= sRingbuffer.count
         semaphore.signal()
+    }
+    
+    func stopAudioUnit() {
 
     }
-
-    func initPlayFromHelloPacket() {
-        
-        var desc = AudioComponentDescription(
-            componentType: kAudioUnitType_Output,
-            componentSubType: kAudioUnitSubType_RemoteIO,
-            componentManufacturer: kAudioUnitManufacturer_Apple,
-            componentFlags: 0, componentFlagsMask: 0)
-        
-        var inComp = AudioComponentFindNext(nil, &desc)
-        
-        AudioComponentInstanceNew(inComp!, &audioUnit)
-        /*
-         #define kOutputBus 0
-         #define kInputBus 1
-         */
-        
-        // setup playback io
-        var flag : UInt32 = 1;
-        AudioUnitSetProperty(audioUnit,
-                             kAudioOutputUnitProperty_EnableIO,
-                             kAudioUnitScope_Output,
-                             0,
-                             &flag,
-                             UInt32(MemoryLayout.size(ofValue: flag)))
-        
-        AudioUnitSetProperty(audioUnit,
-                             kAudioUnitProperty_StreamFormat,
-                             kAudioUnitScope_Output,
-                             0,
-                             &audioFormat,
-                             UInt32(MemoryLayout.size(ofValue: audioFormat)))
-        
-        
-        AudioUnitSetProperty(audioUnit,
-                             kAudioUnitProperty_StreamFormat,
-                             kAudioUnitScope_Input,
-                             0,
-                             &audioFormat,
-                             UInt32(MemoryLayout.size(ofValue: audioFormat)))
-
-        do {
-            let ses = AVAudioSession.sharedInstance()
-            try ses.setPreferredIOBufferDuration(TimeInterval(0.005))
-            self.internalIOBufferDuration = ses.ioBufferDuration
-        }
-        catch {
-            print("FAILED TO SET IO Duration")
-        }
-        
-        print("Configured for internalIOBufersize=\(internalIOBufferDuration)")
-        
+    
+    func addPlaybackCallback() {
         pcmBuf = Array.init(repeating: 0 as UInt8, count: Int(8192))
         var callbackStruct = AURenderCallbackStruct()
         callbackStruct.inputProcRefCon = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
@@ -135,7 +71,7 @@ class MuxHALAudioPlayer {
               inNumberFrames : UInt32,
               ioData         : UnsafeMutablePointer<AudioBufferList>?) -> OSStatus in
             
-            let _self = Unmanaged<MuxHALAudioPlayer>.fromOpaque(inRefCon).takeUnretainedValue()
+            let _self = Unmanaged<AUHALAudioPlayer>.fromOpaque(inRefCon).takeUnretainedValue()
             if ioData == nil {
                 return .zero
             }
@@ -144,7 +80,7 @@ class MuxHALAudioPlayer {
             
             let abl = UnsafeMutableAudioBufferListPointer(ioData)!
             var buffer = abl[0]
-            let bufferSize = Int(inNumberFrames * _self.audioFormat.mBytesPerFrame)
+            let bufferSize = Int(inNumberFrames * _self.outAudioF.mBytesPerFrame)
             buffer.mDataByteSize = UInt32(bufferSize)
             buffer.mNumberChannels = 1
             
@@ -195,21 +131,7 @@ class MuxHALAudioPlayer {
                 })
             }
             _self.sRingbufferRO %= _self.sRingbuffer.count
-            /*
-            let psi = data.startIndex
-            let rsi = _self.readyData.startIndex
-            if _self.readyData.count > bufferSize {
-                data.replaceSubrange(
-                    psi ..< psi+bufferSize,
-                    with: _self.readyData.subdata(in: rsi ..< rsi+bufferSize))
-                _self.readyData.removeFirst(bufferSize)
-            }
-            else {
-                data.resetBytes(in: psi ..< psi+bufferSize)
-                _self.log("not enough ready dat")
-                
-            }*/
-            
+       
             _self.log("Filling \(_self.pcmBuf.count)")
             memcpy(buffer.mData, &data, bufferSize)
             
@@ -228,11 +150,8 @@ class MuxHALAudioPlayer {
         AudioUnitSetProperty(audioUnit!,
                              kAudioUnitProperty_SetRenderCallback,
                              kAudioUnitScope_Global,
-                             0,
+                             kAudioSystemOutputBus,
                              &callbackStruct,
                              UInt32(MemoryLayout.size(ofValue: callbackStruct)))
-        
-        AudioUnitInitialize(audioUnit!)
-        AudioOutputUnitStart(audioUnit!)
     }
 }
