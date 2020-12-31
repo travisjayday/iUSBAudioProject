@@ -24,17 +24,14 @@ class ClientAUHALInterface {
     var timeStart : Double = 0
     var bytesReceived : Int = 0
     var internalIOBufferDuration : Double = 0.0
-    var debug = true
     var useMic = false
-
-    /// Print wrapper.
-    func log(_ s : String) {
-        if debug { print("[ClientAUHALInterface] " + s) }
-    }
     
+    let TAG = "ClientAUHALInterface"
+
     func endSession() {
         let speed = (Double(bytesReceived) / (Date().timeIntervalSince1970 - timeStart))
-        print("SPEED: \(speed)bytes/s");
+        Logger.log(.log, TAG, "SPEED: \(speed)bytes/s");
+        Logger.log(.log, TAG, "Disposing of remoteIO Audio unit...")
         AudioOutputUnitStop(remoteAudioUnit)
         AudioComponentInstanceDispose(remoteAudioUnit)
         initted = false
@@ -42,7 +39,7 @@ class ClientAUHALInterface {
     
     func initUnit(outFormat: AudioStreamBasicDescription, inFormat: AudioStreamBasicDescription?, _micPacketReady: ((_ ptr : UnsafeMutableRawPointer, _ len : Int) -> Void)?) {
         
-        log("Initting mobile audio IO interface...")
+        Logger.log(.log, TAG, "Initting mobile audio IO interface...")
         
         outAudioF = outFormat
         
@@ -50,8 +47,8 @@ class ClientAUHALInterface {
         
         initted = true
         if inFormat != nil {
-            log("inFormat is not nil, so will init recording Mic")
-            log("inFormat: \(inFormat)")
+            Logger.log(.log, TAG, "inFormat is not nil, so will init recording Mic")
+            Logger.log(.log, TAG, "inFormat: \(inFormat)")
             useMic = true
             inAudioF = inFormat
         }
@@ -113,11 +110,11 @@ class ClientAUHALInterface {
                                  &preferredFormat,
                                  &size)
             
-            log("Device audio format: \(preferredFormat) versus our \(inAudioF)")
+            Logger.log(.log, TAG, "Device audio format: \(preferredFormat) versus our \(inAudioF)")
             
             // TODO: We are assuming sample rates match
             if (preferredFormat.mSampleRate != inAudioF.mSampleRate) {
-               log("SAmple rate mismatch!!!")
+               Logger.log(.log, TAG, "SAmple rate mismatch!!!")
             }
             
             // Set input format (format of microphone output)
@@ -148,10 +145,10 @@ class ClientAUHALInterface {
             self.internalIOBufferDuration = ses.ioBufferDuration
         }
         catch {
-            log("FAILED TO SET IO Duration")
+            Logger.log(.log, TAG, "FAILED TO SET IO Duration")
         }
         
-        log("Configured for internalIOBufersize=\(internalIOBufferDuration)")
+        Logger.log(.log, TAG, "Configured for internalIOBufersize=\(internalIOBufferDuration)")
         
         auhalPlayer = AUHALAudioPlayer()
         auhalPlayer.initUnit(unit: remoteAudioUnit, outFormat: outAudioF)

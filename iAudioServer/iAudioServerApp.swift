@@ -41,11 +41,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var muxHandler: USBMuxHandler!
     var audioStreamer: MuxHALAudioStreamer!
     var useMic : Bool = true
+    let TAG = "ServerAppDelegate"
     
     func tryConnectToDeviceLoop() {
         DispatchQueue.global(qos: .utility).async {
             var succ = false
-            while !succ {
+            while true {
                 succ = self.muxHandler.tryConnectToDevice()
             }
         }
@@ -99,70 +100,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// - Parameter sock: The socket that directly connects to the device.
     func deviceConnected(_ sock: Socket) throws -> Void{
         
-        // Create class to interface with system audio output
-        audioStreamer     = MuxHALAudioStreamer()
-        
-        let kHeaderSig    = Data([0x69, 0x4, 0x20, 0]) // Header PCM Data Signature
-        let kHandshakeSig = Data([0x69, 0x4, 0x19, 0]) // Header Handshak Signature
-        let kHandMicSig   = Data([0x69, 0x4, 0x21, 0]) // Header Handshak Signature
-        var packet        = Data(capacity: 2048)    // Preallocate Packet Buffer
-        
-        /// Called when audioStreamer queries current audio configuration and
-        /// reports back the AudioStreamBasicDescription of the current stream.
-        /// i.e. the format of future PCM Audio buffers, sample rate, etc.
-        /// - Parameter absd: Serialized ASBD.
-        /// - Throws: If connection to socket fails.
-        func handshakePacketReady(absd : Data) throws {
-            var len : UInt32 = UInt32(absd.count)
-            packet.removeAll(keepingCapacity: true)
-            if useMic { packet.append(kHandMicSig)   }
-            else      { packet.append(kHandshakeSig) }  // append command sig
-            packet.append(Data(bytes: &len, count: 4))  // append payload length
-            packet.append(absd)                         // append payload
-            print("Sending handshake \(packet[0]) \(packet[1]) \(packet[2])" +
-                " \(packet[3]) \(packet[4]) \(packet[5])")
-            print("Handshake size: \(packet.count). Embedded payload size: \(len)")
-            try sock.write(from: packet)
-        }
-        
-        /// Called when the AUHAL audio unit rendered a new buffer of PCM
-        /// Audio data from Virtual USBAudioDriver (i.e. system output audio)
-        /// - Parameters:
-        ///   - pcmPtr: Pointer to the PCM Audio buffer.
-        ///   - pcmLen: Length of the PCM Audio buffer
-        func packetReady(pcmPtr : UnsafeMutableRawPointer, pcmLen : Int) {
-            var len : UInt32 = UInt32(pcmLen)
-            
-            packet.removeAll(keepingCapacity: true)
-            packet.append(kHeaderSig)
-            packet.append(Data(bytes: &len, count: 4))
-            packet.append(Data(bytesNoCopy: pcmPtr, count: pcmLen,
-                               deallocator: Data.Deallocator.none))
-            //print("Sending packet \(packet[0]) \(packet[1]) \(packet[2])" +
-                //" \(packet[3]) \(packet[4]) \(packet[5])")
-            //print("Packet size: \(packet.count). Embedded payload size: \(len)")
-            do {
-                try sock.write(from: packet)
-            } catch {
-                print("Failed to send packet")
-                audioStreamer.endSession()
-                sock.close()
-                tryConnectToDeviceLoop()
-            }
-        }
-
-        /// Start audio streaming session
-        try audioStreamer.makeSession(
-            _packetReady: packetReady,
-            _handshakePacketReady: handshakePacketReady,
-            _useMic: useMic)
-        
         func onReceived(bytes : UnsafeMutablePointer<Int8>, len : Int) {
-            print("about to enqueue IOS MIC packet")
+            Logger.log(.verbose, TAG, "about to enqueue IOS MIC packet")
             audioStreamer.micAuhal.enqueuePCM(bytes, len)
         }
         
-        let rec = PCMReceiver(sock, dataCallback: onReceived, handshakeCallback: nil)
-        try rec.receive()
+        func onTerminated() {
+            Logger.log(.log, TAG, "Terminating audio streamer...")
+            audioStreamer.endSession()
+        }
+        
+        let trans = PCMTransceiver(
+            sock,
+            dataCallback: onReceived,
+            handshakeCallback: nil,
+            terminatedCallback: onTerminated)
+        
+        // Create class to interface with system audio output
+        audioStreamer = MuxHALAudioStreamer()
+                
+        /// Start audio streaming session
+        try audioStreamer.makeSession(
+            _packetReady: trans.packetReady,
+            _handshakePacketReady: trans.handshakePacketReady,
+            _useMic: useMic)
+
+        try trans.receiveLoop()
     }
 }

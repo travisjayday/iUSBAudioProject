@@ -56,6 +56,8 @@ class USBMuxHandler: NSObject {
     /// Called when connection to a device is established
     var connectedCallback: (Socket) throws -> Void
     
+    let TAG = "USBMuxHandler"
+    
     /// Register callbacks.
     init(_serverState: ServerState,
          _connectedCallback: @escaping (_ dev : Socket) throws -> Void) {
@@ -77,7 +79,8 @@ class USBMuxHandler: NSObject {
         // read remaining payload into memory
         let payloadSize = Int(packetSize) - kUSBMuxHeaderSize
         if payloadSize < 10 {
-            throw NSError()
+            Logger.log(.emergency, TAG, "USBMuxd got corrupted!")
+            throw NSError(domain: "Error_Domain", code: 100, userInfo: nil)
         }
         
         var rawPayload = [Int8](repeating: 0, count: payloadSize)
@@ -94,8 +97,13 @@ class USBMuxHandler: NSObject {
     /// and returns response as a dictionary parsed from plist
     func sendCmd(_ sock: Socket, _ cmd: MuxPacket) throws -> [String : Any] {
         // send command and await response
+        try sock.setWriteTimeout(value: 2)
+        try sock.setReadTimeout(value: 2)
         try sock.write(from: cmd.serialize())
-        return try awaitResponsePlist(sock: sock)
+        let resp = try awaitResponsePlist(sock: sock)
+        try sock.setWriteTimeout(value: 1000000)
+        try sock.setReadTimeout(value: 1000000)
+        return resp
     }
     
     /// Tries to connect to a device by given ID over sock. If succesfull,
@@ -107,18 +115,18 @@ class USBMuxHandler: NSObject {
         if (resp["Number"] as! Int == 0) {
             // connection succesful. Exchange hellos.
             updateStatus(status: .connected_active)
-            print("connected success")
+            Logger.log(.log, TAG, "connected success")
             let data = NSMutableData()
             try sock.read(into: data)
             let s = String.init(data: data as Data, encoding: .utf8)
-            print("Received: \(s)")
+            Logger.log(.log, TAG, "Received: \(s)")
             try sock.write(from: "Hello from computer".data(using: .utf8)!)
             try connectedCallback(sock)
             return true;
         }
         else {
             updateStatus(status: .connected_inactive)
-            print("Failed to connect")
+            Logger.log(.emergency, TAG, "Failed to connect")
             return false;
         }
     }
@@ -140,19 +148,21 @@ class USBMuxHandler: NSObject {
     ///     Try to connect.
     func tryConnectToDevice() -> Bool {
         var succ = false
-        print("Starting tryToConnectToDevice()")
+        Logger.log(.log, TAG, "Starting tryToConnectToDevice()")
         
         // Update UI to show we're trying to connect.
         updateStatus(status: .trying_to_connect)
         
         do {
             // Create socket.
-            print("Trying to connect to usbmuxd")
+            Logger.log(.log, TAG, "Trying to connect to usbmuxd")
             let sock = try Socket.create(family: .unix,
                                          type: .stream,
                                          proto: .unix)
             sock.readBufferSize = 32768
             try sock.connect(to: "/var/run/usbmuxd")
+            
+            Logger.log(.log, TAG, "Connected to unix socket")
 
             // List currently connected devices.
             let plist = try sendCmd(sock, MuxPacket("ListDevices"))
@@ -163,7 +173,7 @@ class USBMuxHandler: NSObject {
                 
                 let devId = dev["DeviceID"] as! UInt8
                 
-                print("Device found #\(devId)")
+                Logger.log(.log, TAG, "Device found #\(devId)")
                 
                 do {
                     let connected = try connectDeviceById(sock, devId)
@@ -175,11 +185,10 @@ class USBMuxHandler: NSObject {
                     updateStatus(status: .connected_inactive)
                 }
             }
-            
-            print("No device connected. start listening");
-            
+
             // No device were connected.
             if serverState.status != .connected_active {
+                Logger.log(.log, TAG, "No device connected. start listening");
                 
                 try sendCmd(sock, MuxPacket("Listen"))
                 
@@ -192,18 +201,25 @@ class USBMuxHandler: NSObject {
                     // This plist is either connection or disconnection response
                     let plist = try awaitResponsePlist(sock: sock)
                     
-                    let devId = plist["DeviceID"] as! UInt8
-    
+                    // something went wrong. abort.
+                    if !plist.keys.contains("DeviceID") {
+                        succ = false
+                        updateStatus(status: .no_devs_found)
+                        break;
+                    }
+                    
+                    let devId : UInt8 = plist["DeviceID"] as! UInt8
+
                     if plist["MessageType"] as! String == "Attached" {
                         updateStatus(status: .trying_to_connect)
-                        print("Attached device")
+                        Logger.log(.log, TAG, "Attached device")
                         
                         // sets status to either connected_active
                         // or connected_inactive
                         sleep(2)
                         let plist = try sendCmd(sock, MuxPacket("ListDevices"))
                         let devices = plist["DeviceList"] as! NSArray
-                        print(devices)
+                        Logger.log(.log, TAG, "\(devices)")
 
                         let connected = try connectDeviceById(sock, devId)
                         
@@ -216,16 +232,34 @@ class USBMuxHandler: NSObject {
                         }
                     }
                     else if plist["MessageType"] as! String == "Detached" {
-                        print("Device detached")
+                        Logger.log(.log, TAG, "Device detached")
                         updateStatus(status: .no_devs_found)
                     }
                 }
             }
         } catch {
-//            print("error: \(error)")
+            Logger.log(.emergency, TAG, "error: \(errno)")
+            if errno == 61 || errno == 35 {
+                shellAsRoot("sudo launchctl stop com.apple.usbmuxd")
+                sleep(2)
+            }
             succ = false
         }
-        print("Finished tryConnectToDevice()")
+        Logger.log(.log, TAG, "Finished tryConnectToDevice() with success: \(succ)")
         return succ
+    }
+    
+    @discardableResult
+    func shell(_ args: String...) -> Int32 {
+        let task = Process()
+        task.launchPath = "/bin/zsh"
+        task.arguments = args
+        task.launch()
+        task.waitUntilExit()
+        return task.terminationStatus
+    }
+    
+    func shellAsRoot(_ cmd : String) {
+        shell("-c",  "/usr/bin/osascript -e 'do shell script \"\(cmd)\" with administrator privileges'")
     }
 }

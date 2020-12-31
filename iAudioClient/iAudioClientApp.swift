@@ -14,6 +14,7 @@ struct iAudioClientApp: App {
     
     @State var client : ClientMain!
     var contentView : ContentView = ContentView(appState: AppState())
+    let TAG = "iAudioClientApp"
     
     func mainLoop() {
         while (true) {
@@ -21,7 +22,7 @@ struct iAudioClientApp: App {
             do {
                 try client.startListening()
             } catch {
-                print("Error when tried listening")
+                Logger.log(.emergency, TAG, "Error when tried listening")
             }
         }
     }
@@ -61,26 +62,15 @@ class ClientMain  {
     
     /// The MuxHALAudioPlayer packets get piped into
     var auhalIF : ClientAUHALInterface!
+    var trans : PCMTransceiver!
     var sock : Socket!
     var appState : AppState!
-    var debug = false
-    var pcmBuf : Data!
-    var micPkt = Data(capacity: 2048)    // Preallocate Packet Buffer
-    let kHeaderSig    = Data([0x69, 0x4, 0x20, 0]) // Header PCM Data Signature
+    let TAG = "ClientMain"
 
-    
     init(appState : AppState) {
         self.appState = appState
     }
-    
 
-    
-    func log(_ s : String) {
-        if debug { print("[iAudioClientApp]" + s) }
-    }
-    
-
-    
     func startListening() throws {
    
         sock = try Socket.create(family: .inet, type: .stream, proto: .tcp)
@@ -90,54 +80,28 @@ class ClientMain  {
         let buf = NSMutableData()
         try sock.read(into: buf)
         let s = String.init(data: buf as Data, encoding: .utf8)
-        print("Receifved: \(s)")
+        Logger.log(.log, TAG, "Receifved: \(s)")
+        
+        func onHandshake(outAF : AudioStreamBasicDescription,
+                         inAF  : AudioStreamBasicDescription?) {
+            auhalIF = ClientAUHALInterface()
+            auhalIF.initUnit(outFormat: outAF, inFormat: inAF, _micPacketReady: trans.packetReady)
+        }
         
         func onReceived(bytes : UnsafeMutablePointer<Int8>, len : Int) {
-            log("about to enqueue packet")
+            Logger.log(.verbose, TAG, "about to enqueue packet")
             auhalIF.auhalPlayer.enqueuePCM(bytes, len)
         }
         
-        func onHandshake(outAF : AudioStreamBasicDescription,
-                         inAF : AudioStreamBasicDescription?) {
-            auhalIF = ClientAUHALInterface()
-            auhalIF.initUnit(outFormat: outAF,
-                             inFormat: inAF,
-                             _micPacketReady: self.packetReady)
+        func onTerminated() {
+            auhalIF.endSession()
+            showAlert()
         }
         
-        let rec = PCMReceiver(sock,
-                              dataCallback: onReceived,
-                              handshakeCallback: onHandshake)
-        try rec.receive()
-      
-        auhalIF.endSession()
-        showAlert()
-    }
-    
-    /// Called when the AUHAL audio unit rendered a new buffer of PCM
-    /// Audio data from Virtual USBAudioDriver (i.e. system output audio)
-    /// - Parameters:
-    ///   - pcmPtr: Pointer to the PCM Audio buffer.
-    ///   - pcmLen: Length of the PCM Audio buffer
-    func packetReady(pcmPtr : UnsafeMutableRawPointer, pcmLen : Int) {
-        var len : UInt32 = UInt32(pcmLen)
-        
-        micPkt.removeAll(keepingCapacity: true)
-        micPkt.append(kHeaderSig)
-        micPkt.append(Data(bytes: &len, count: 4))
-        micPkt.append(Data(bytesNoCopy: pcmPtr, count: pcmLen,
-                           deallocator: Data.Deallocator.none))
-
-        print("Mic Packet is ready to be sent")
-        do {
-            print("About to send \(micPkt[0]) \(micPkt[1]) \(micPkt[2]) " +
-                    "\(micPkt[3]) \(micPkt[4]) \(micPkt[10]) \(micPkt[11])")
-            try sock.write(from: micPkt)
-        } catch {
-            print("Failed to send packet")
-            //player.endSession()
-            //sock.close()
-        }
+        trans = PCMTransceiver(sock, dataCallback:       onReceived,
+                                     handshakeCallback:  onHandshake,
+                                     terminatedCallback: onTerminated)
+        try trans.receiveLoop()
     }
     
     func showAlert() {

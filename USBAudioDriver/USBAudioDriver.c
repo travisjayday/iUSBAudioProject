@@ -3579,18 +3579,24 @@ static OSStatus USBAudio_StartIO(AudioServerPlugInDriverRef inDriver, AudioObjec
     pthread_mutex_lock(&gPlugIn_StateMutex);
     
     // figure out what we need to do
-    if(gDevice_IOIsRunning == UINT64_MAX)
+    if (gDevice_IOIsRunning == UINT64_MAX)
     {
         // overflowing is an error
         theAnswer = kAudioHardwareIllegalOperationError;
     }
-    else if(gDevice_IOIsRunning == 0)
+    else if (gDevice_IOIsRunning == 0)
     {
         // We need to start the hardware, which in this case is just anchoring the time line.
         gDevice_IOIsRunning = 1;
         gDevice_NumberTimeStamps = 0;
         gDevice_AnchorSampleTime = 0;
         gDevice_AnchorHostTime = mach_absolute_time();
+        
+        if (gDevice_ringBuffer == NULL)
+        {
+            // allocate memory for ringbuffer
+            gDevice_ringBuffer = (char*) malloc(kDevice_RingBufferSize);
+        }
     }
     else
     {
@@ -3632,6 +3638,13 @@ static OSStatus USBAudio_StopIO(AudioServerPlugInDriverRef inDriver, AudioObject
     {
         // We need to stop the hardware, which in this case means that there's nothing to do.
         gDevice_IOIsRunning = 0;
+        
+        if (gDevice_ringBuffer != NULL)
+        {
+            // Free memory for ringbuffer.
+            free(gDevice_ringBuffer);
+            gDevice_ringBuffer = NULL;
+        }
     }
     else
     {
@@ -3773,6 +3786,10 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
     FailWithAction(inDriver != gAudioServerPlugInDriverRef, theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_DoIOOperation: bad driver reference");
     FailWithAction(inDeviceObjectID != kObjectID_Device, theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_DoIOOperation: bad device ID");
     FailWithAction((inStreamObjectID != kObjectID_Stream_Input) && (inStreamObjectID != kObjectID_Stream_Output), theAnswer = kAudioHardwareBadObjectError, Done, "USBAudio_DoIOOperation: bad stream ID");
+    FailWithAction(gDevice_ringBuffer == NULL, theAnswer = kAudioHardwareUnspecifiedError, Done,
+        "USBAudio_DoIOOperation: Attempted to write IO after free")
+    
+    pthread_mutex_lock(&gDevice_IOMutex);
 
     /*
     // clear the buffer if this iskAudioServerPlugInIOOperationReadInput
@@ -3784,12 +3801,12 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
         //syslog(LOG_WARNING, "MIC IN: %d", val);
         memset(ioMainBuffer, val, inIOBufferFrameSize * 8);
     }
-    /*
     else if (inOperationID == kAudioServerPlugInIOOperationWriteMix) {
         
     }*/
 
     if (inOperationID == kAudioServerPlugInIOOperationReadInput) {
+        
         // calculate the ring buffer offset for the first sample INPUT
         gDevice_ringBufferOffset = ((UInt64)(inIOCycleInfo->mInputTime.mSampleTime * kDevice_BytesPerFrame) % kDevice_RingBufferSize);
         
@@ -3807,63 +3824,65 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
         gDevice_inIOBufferByteSize = inIOBufferFrameSize * kDevice_BytesPerFrame;
 
         if (gDevice_remainingRingBufferByteSize > gDevice_inIOBufferByteSize) {
+            
+            // copy whole buffer if we have space
+            memcpy(ioMainBuffer, gDevice_ringBuffer + gDevice_ringBufferOffset, gDevice_inIOBufferByteSize);
 
-                // copy whole buffer if we have space
-                memcpy(ioMainBuffer, gDevice_ringBuffer + gDevice_ringBufferOffset, gDevice_inIOBufferByteSize);
-
-                // clear the internal ring buffer for later i guess? Not sure why
-                memset(gDevice_ringBuffer + gDevice_ringBufferOffset, 0, gDevice_inIOBufferByteSize);
-            }
-            else
-            {
-                // copy 1st half (copy tail end of our local ring buffer into the first
-                // half of the ioMainBuffer)
-                memcpy(ioMainBuffer, gDevice_ringBuffer + gDevice_ringBufferOffset, gDevice_remainingRingBufferByteSize);
-                
-                // copy 2nd half (copy the beginning of our local ring buffer into the
-                // second half of ioMainBuffer until we've filled mainIObuffer)
-                memcpy(ioMainBuffer + gDevice_remainingRingBufferByteSize, gDevice_ringBuffer, gDevice_inIOBufferByteSize - gDevice_remainingRingBufferByteSize);
-
-                // clear the 1st half (clear the tail end of our local ring buffer)
-                memset(gDevice_ringBuffer + gDevice_ringBufferOffset, 0, gDevice_remainingRingBufferByteSize);
-                
-                // clear the 2md half (clear the beginnnig end of our ring buffer
-                // until we've cleared a total of ioMainBufferByteSize of bytes)
-                memset(gDevice_ringBuffer, 0, gDevice_inIOBufferByteSize - gDevice_remainingRingBufferByteSize);
-            }
+            // clear the internal ring buffer for later i guess? Not sure why
+            memset(gDevice_ringBuffer + gDevice_ringBufferOffset, 0, gDevice_inIOBufferByteSize);
         }
+        else {
+            // copy 1st half (copy tail end of our local ring buffer into the first
+            // half of the ioMainBuffer)
+            memcpy(ioMainBuffer, gDevice_ringBuffer + gDevice_ringBufferOffset, gDevice_remainingRingBufferByteSize);
+
+            // copy 2nd half (copy the beginning of our local ring buffer into the
+            // second half of ioMainBuffer until we've filled mainIObuffer)
+            memcpy(ioMainBuffer + gDevice_remainingRingBufferByteSize, gDevice_ringBuffer, gDevice_inIOBufferByteSize - gDevice_remainingRingBufferByteSize);
+
+            // clear the 1st half (clear the tail end of our local ring buffer)
+            memset(gDevice_ringBuffer + gDevice_ringBufferOffset, 0, gDevice_remainingRingBufferByteSize);
+
+            // clear the 2md half (clear the beginnnig end of our ring buffer
+            // until we've cleared a total of ioMainBufferByteSize of bytes)
+            if (gDevice_ringBuffer != NULL)
+            memset(gDevice_ringBuffer, 0, gDevice_inIOBufferByteSize - gDevice_remainingRingBufferByteSize);
+        }
+    }
         
-        // copy io buffer to internal ring buffer
-        if(inOperationID == kAudioServerPlugInIOOperationWriteMix)
+    // copy io buffer to internal ring buffer
+    if (inOperationID == kAudioServerPlugInIOOperationWriteMix) {
+
+        // calculate the ring buffer offset for the first sample OUTPUT
+        gDevice_ringBufferOffset = ((UInt64)(inIOCycleInfo->mOutputTime.mSampleTime * kDevice_BytesPerFrame) % kDevice_RingBufferSize);
+
+        // calc remaining space in buffer
+        gDevice_remainingRingBufferByteSize = kDevice_RingBufferSize - gDevice_ringBufferOffset;
+
+        // calculate the size of the IO buffer
+        gDevice_inIOBufferByteSize = inIOBufferFrameSize * kDevice_BytesPerFrame;
+
+        if (gDevice_remainingRingBufferByteSize > gDevice_inIOBufferByteSize)
         {
-            // calculate the ring buffer offset for the first sample OUTPUT
-            gDevice_ringBufferOffset = ((UInt64)(inIOCycleInfo->mOutputTime.mSampleTime * kDevice_BytesPerFrame) % kDevice_RingBufferSize);
-            
-            // calc remaining space in buffer
-            gDevice_remainingRingBufferByteSize = kDevice_RingBufferSize - gDevice_ringBufferOffset;
-            
-            // calculate the size of the IO buffer
-            gDevice_inIOBufferByteSize = inIOBufferFrameSize * kDevice_BytesPerFrame;
-
-            if (gDevice_remainingRingBufferByteSize > gDevice_inIOBufferByteSize)
-            {
-                // copy whole buffer since we have space
-                memcpy(gDevice_ringBuffer + gDevice_ringBufferOffset, ioMainBuffer, gDevice_inIOBufferByteSize);
-            }
-            else
-            {
-                // copy 1st half (copy starting bytes of iobuffer into tail end of
-                // local ringbuffer)
-                memcpy(gDevice_ringBuffer + gDevice_ringBufferOffset, ioMainBuffer, gDevice_remainingRingBufferByteSize);
-                
-                // copy 2nd half (copy tail enf of iobuffer into starting bytes of
-                // local ringbuffer)
-                memcpy(gDevice_ringBuffer, ioMainBuffer + gDevice_remainingRingBufferByteSize, gDevice_inIOBufferByteSize - gDevice_remainingRingBufferByteSize);
-            }
-
-            // clear the io buffer
-            memset(ioMainBuffer, 0, gDevice_inIOBufferByteSize);
+            // copy whole buffer since we have space
+            memcpy(gDevice_ringBuffer + gDevice_ringBufferOffset, ioMainBuffer, gDevice_inIOBufferByteSize);
         }
+        else
+        {
+            // copy 1st half (copy starting bytes of iobuffer into tail end of
+            // local ringbuffer)
+            memcpy(gDevice_ringBuffer + gDevice_ringBufferOffset, ioMainBuffer, gDevice_remainingRingBufferByteSize);
+
+            // copy 2nd half (copy tail enf of iobuffer into starting bytes of
+            // local ringbuffer)
+            memcpy(gDevice_ringBuffer, ioMainBuffer + gDevice_remainingRingBufferByteSize, gDevice_inIOBufferByteSize - gDevice_remainingRingBufferByteSize);
+        }
+
+        // clear the io buffer
+        memset(ioMainBuffer, 0, gDevice_inIOBufferByteSize);
+    }
+
+    pthread_mutex_unlock(&gDevice_IOMutex);
 
 Done:
     return theAnswer;

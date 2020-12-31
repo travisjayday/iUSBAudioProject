@@ -24,7 +24,6 @@ struct ContentView: View {
     @ObservedObject var serverState = ServerState();
 
     func genStatus() -> some View {
-        print("Re-genning veiw")
         var statusViews : [Any] = [];
         var statusText = "";
         var isBuffering = false;

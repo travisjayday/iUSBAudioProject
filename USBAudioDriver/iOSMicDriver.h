@@ -153,7 +153,7 @@ static UInt64                   gDevice_NumberTimeStamps        = 0;
 static Float64                  gDevice_AnchorSampleTime        = 0.0;
 static UInt64                   gDevice_AnchorHostTime          = 0;
 
-static char                     gDevice_ringBuffer[kDevice_RingBufferSize];
+static char*                    gDevice_ringBuffer;
 static UInt64                   gDevice_ringBufferOffset        = 0;
 static UInt64                   gDevice_inIOBufferByteSize      = 0;
 static UInt64                   gDevice_remainingRingBufferByteSize = 0;

@@ -22,12 +22,7 @@ class AUHALAudioRecorder {
     /// we're using mono-channel audio.
     var audioBuffer : AudioBuffer!
     
-    var debug = false
-    
-    /// Print wrapper.
-    func log(_ s : String) {
-        if debug { print("[AUHALAudioRecorder] " + s) }
-    }
+    let TAG = "AUHALAudioRecorder"
     
     func initUnit(unit: AudioComponentInstance, inFormat: AudioStreamBasicDescription, pcmPacketReady: ((_ ptr : UnsafeMutableRawPointer, _ len : Int) -> Void)?) {
         
@@ -70,7 +65,7 @@ class AUHALAudioRecorder {
                                       inBusNumber,
                                       inNumberFrames,
                                       _self.audioBufferList.unsafeMutablePointer)
-            _self.log("Rendered with status \(res) "
+            Logger.log(.verbose, _self.TAG, "Rendered with status \(res) "
                     + "Got \(_self.audioBufferList.count) buffers "
                     + "of size \(_self.audioBufferList[0].mDataByteSize) "
                     + "and data \(_self.audioBufferList[0].mData)")
@@ -80,7 +75,7 @@ class AUHALAudioRecorder {
                 _self.micPacketReady!(_self.audioBufferList[0].mData!, Int(_self.audioBufferList[0].mDataByteSize))
             }
             else {
-                _self.log("Failed to populate buffers!")
+                Logger.log(.emergency, _self.TAG, "Failed to populate buffers!")
             }
             return .zero
         }

@@ -107,16 +107,16 @@
 enum
 {
     kObjectID_PlugIn                    = kAudioObjectPlugInObject,
-    kObjectID_Box                       = 2,
-    kObjectID_Device                    = 3,
-    kObjectID_Stream_Input              = 4,
-    kObjectID_Volume_Input_Master       = 5,
-    kObjectID_Mute_Input_Master         = 6,
-    kObjectID_DataSource_Input_Master   = 7,
-    kObjectID_Stream_Output             = 8,
-    kObjectID_Volume_Output_Master      = 9,
-    kObjectID_Mute_Output_Master        = 10,
-    kObjectID_DataSource_Output_Master  = 11
+    kObjectID_Box                       = 12,
+    kObjectID_Device                    = 13,
+    kObjectID_Stream_Input              = 14,
+    kObjectID_Volume_Input_Master       = 15,
+    kObjectID_Mute_Input_Master         = 16,
+    kObjectID_DataSource_Input_Master   = 17,
+    kObjectID_Stream_Output             = 18,
+    kObjectID_Volume_Output_Master      = 19,
+    kObjectID_Mute_Output_Master        = 110,
+    kObjectID_DataSource_Output_Master  = 111
 };
 
 // Declare the stuff that tracks the state of the plug-in, the device and its sub-objects.
@@ -153,7 +153,7 @@ static UInt64                   gDevice_NumberTimeStamps        = 0;
 static Float64                  gDevice_AnchorSampleTime        = 0.0;
 static UInt64                   gDevice_AnchorHostTime          = 0;
 
-static char                     gDevice_ringBuffer[kDevice_RingBufferSize];
+static char*                    gDevice_ringBuffer              = NULL; //[kDevice_RingBufferSize];
 static UInt64                   gDevice_ringBufferOffset        = 0;
 static UInt64                   gDevice_inIOBufferByteSize      = 0;
 static UInt64                   gDevice_remainingRingBufferByteSize = 0;

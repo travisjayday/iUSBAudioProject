@@ -38,13 +38,7 @@ class MuxHALAudioStreamer {
     /// The AUHAL Audio Unit responseible for piping mic data from iOS.
     var micAU: AudioComponentInstance!
 
-    enum DebugLevel {
-        case log
-        case verbose
-    }
-    
-    /// Print for debug.
-    let debug = DebugLevel.log
+    let TAG = "MuxHALAudioStreamer"
     
     var useMic = true
     
@@ -61,17 +55,32 @@ class MuxHALAudioStreamer {
         }
     }
     
-    /// Print wrapper.
-    func log(_ lvl : DebugLevel, _ s : String) {
-        if lvl == debug { print("[*] " + s) }
-    }
-    
     /// Serializes AudioStreamBasicDescription to Data for socket transmission
     func asbdToData(asbd : AudioStreamBasicDescription) -> Data {
         return withUnsafeBytes(of: asbd) {
             return Data(bytes: ($0.baseAddress)!,
                         count: MemoryLayout.size(ofValue: asbd))
         }
+    }
+    
+    func instantiateAUHAL(au : UnsafeMutablePointer<AudioComponentInstance?>) {
+        // Find HAL audio component.
+        var desc = AudioComponentDescription(
+                    componentType:          kAudioUnitType_Output,
+                    componentSubType:       kAudioUnitSubType_HALOutput,
+                    componentManufacturer:  0,
+                    componentFlags:         0,
+                    componentFlagsMask:     0)
+
+        let count = AudioComponentCount(&desc)
+        if count == 0 {
+            Logger.log(.emergency, TAG, "Failed to find AUHAL audio unit!")
+            return
+        }
+    
+        // Instantiate AUHAL audio unit.
+        let comp = AudioComponentFindNext(nil, &desc)
+        AudioComponentInstanceNew(comp!, au)
     }
     
     /// Sets up our USBAudioDriver to poll for new audio input (which is the
@@ -83,7 +92,7 @@ class MuxHALAudioStreamer {
     /// - Throws: If cannot communicate to Virtual USBAudioDriver.
     func makeSession(
         _packetReady: @escaping (_ ptr : UnsafeMutableRawPointer, _ len : Int) -> Void,
-        _handshakePacketReady: @escaping (_ format : Data) throws -> Void,
+        _handshakePacketReady: @escaping (_ format : Data, _ useMic: Bool) throws -> Void,
         _useMic : Bool) throws {
         
         self.useMic = _useMic
@@ -105,61 +114,29 @@ class MuxHALAudioStreamer {
             handshakePayload.append(asbdToData(asbd: micAF))
         }
 
-        try _handshakePacketReady(handshakePayload)
+        try _handshakePacketReady(handshakePayload, useMic)
         
-        // Find HAL audio component.
-        var desc = AudioComponentDescription(
-                    componentType:          kAudioUnitType_Output,
-                    componentSubType:       kAudioUnitSubType_HALOutput,
-                    componentManufacturer:  0,
-                    componentFlags:         0,
-                    componentFlagsMask:     0)
-    
-        let count = AudioComponentCount(&desc)
-        if count == 0 {
-            print("Failed to find AUHAL audio unit!")
-            return
-        }
-        
-        // Instantiate AUHAL audio unit.
-        let comp = AudioComponentFindNext(nil, &desc)
-        AudioComponentInstanceNew(comp!, &usbAU)
-
+        instantiateAUHAL(au: &usbAU)
         try initSystemAudioTransmission()
-        if useMic {
-            var desc = AudioComponentDescription(
-                        componentType:          kAudioUnitType_Output,
-                        componentSubType:       kAudioUnitSubType_HALOutput,
-                        componentManufacturer:  0,
-                        componentFlags:         0,
-                        componentFlagsMask:     0)
         
-            let count = AudioComponentCount(&desc)
-            if count == 0 {
-                print("Failed to find AUHAL audio unit!")
-                return
-            }
-            
-            // Instantiate AUHAL audio unit.
-            let comp = AudioComponentFindNext(nil, &desc)
-            AudioComponentInstanceNew(comp!, &micAU)
+        if useMic {
+            instantiateAUHAL(au: &micAU)
             try initIOSMicReceiving()
         }
         // Start polling virtual audio device.
         AudioUnitInitialize(usbAU!)
-        AudioUnitInitialize(micAU!)
+        if useMic { AudioUnitInitialize(micAU!) }
         AudioOutputUnitStart(usbAU!)
-        AudioOutputUnitStart(micAU!)
-        log(DebugLevel.log, "Started output unit")
+        if useMic { AudioOutputUnitStart(micAU!) }
+        Logger.log(.log, TAG, "Started output unit")
     }
     
     func initIOSMicReceiving() throws {
-        
 
         // Enable IO on the virtual speaker's output bus.
         var flag : UInt32 = 1;
         
-        log(DebugLevel.log, "Enabling IO for iOS mic playback...")
+        Logger.log(.log, TAG, "Enabling IO for iOS mic playback...")
         try handle(AudioUnitSetProperty(micAU,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Output,
@@ -167,22 +144,22 @@ class MuxHALAudioStreamer {
                              UInt32(MemoryLayout.size(ofValue: flag))))
         
         // Disable IO for the input of the virtual speaker.
-        /*flag = 0
-        AudioUnitSetProperty(micAU,
+        flag = 0
+        try handle(AudioUnitSetProperty(micAU,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Input,
                              kAudioInputBus, &flag,
-                             UInt32(MemoryLayout.size(ofValue: flag)))*/
+                             UInt32(MemoryLayout.size(ofValue: flag))))
         
         // Set iOSMicDriver device as input to HAL unit.
-        log(DebugLevel.log, "Setting iOSMicDeviceID as CurrentDevice...")
+        Logger.log(.log, TAG, "Setting iOSMicDeviceID as CurrentDevice...")
         try handle(AudioUnitSetProperty(micAU,
                              kAudioOutputUnitProperty_CurrentDevice,
                              kAudioUnitScope_Global,
                              kAudioOutputBus, &micDriverDeviceID,
                              UInt32(MemoryLayout.size(ofValue: micDriverDeviceID))))
 
-        log(DebugLevel.log, "Current Audio Format for iOS Mic: \(micAF!)...")
+        Logger.log(.log, TAG, "Current Audio Format for iOS Mic: \(micAF!)...")
         
         // Set equal formats for input/output to avoid making AUHAL
         // convert PCM formats. For a diagram, see
@@ -190,7 +167,7 @@ class MuxHALAudioStreamer {
         
         // Set input stream format. this is the data format of audio coming
         // into the AUHAL unit's input scope. i.e. audio stream format from mic.
-        log(DebugLevel.log, "Setting IO Stream formats for iOS Mic playback equal...")
+        Logger.log(.log, TAG, "Setting IO Stream formats for iOS Mic playback equal...")
         try handle(AudioUnitSetProperty(micAU,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
@@ -210,7 +187,7 @@ class MuxHALAudioStreamer {
         // Request very small internal IO buffer sizes to increase frequency
         // by which we send packets. This reduces latency but stresses CPU.
         var internalIOBufferSize = 512
-        log(DebugLevel.log, "Setting internal buffer size for Mic playback (\(internalIOBufferSize))...")
+        Logger.log(.log, TAG, "Setting internal buffer size for Mic playback (\(internalIOBufferSize))...")
         try handle(AudioUnitSetProperty(micAU,
                              kAudioDevicePropertyBufferFrameSize,
                              kAudioUnitScope_Global,
@@ -218,13 +195,13 @@ class MuxHALAudioStreamer {
                              &internalIOBufferSize,
                              UInt32(MemoryLayout.size(ofValue: internalIOBufferSize))))
         
-        log(DebugLevel.log, "Initting playback unit and adding callback...")
+        Logger.log(.log, TAG, "Initting playback unit and adding callback...")
         micAuhal.initUnit(unit: micAU, outFormat: micAF)
         micAuhal.addPlaybackCallback()
 
         // Start polling virtual audio device.
      
-        print("Started iOS Mic unit")
+        Logger.log(.log, TAG, "Started iOS Mic unit")
     }
     
     func initSystemAudioTransmission() throws {
@@ -232,7 +209,7 @@ class MuxHALAudioStreamer {
         // Enable IO to signal to input scope. This is the element system
         // audio gets re-routed to by Virtual USBAudioDriver.
         var flag : UInt32 = 1;
-        log(DebugLevel.log, "Enabling IO for USBAudioDriver input...")
+        Logger.log(.log, TAG, "Enabling IO for USBAudioDriver input...")
         try handle(AudioUnitSetProperty(usbAU!,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Input,
@@ -241,22 +218,22 @@ class MuxHALAudioStreamer {
         
         // Disable IO for output scope. This scope is used by the system
         // audio to output our media sound
-        /*flag = 0
+        flag = 0
         AudioUnitSetProperty(usbAU,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Output,
                              kAudioOutputBus, &flag,
-                             UInt32(MemoryLayout.size(ofValue: flag)))*/
+                             UInt32(MemoryLayout.size(ofValue: flag)))
         
         // Set USBDriver device as input to HAL unit.
-        log(DebugLevel.log, "Setting current input device to USBAudioDevice...")
+        Logger.log(.log, TAG, "Setting current input device to USBAudioDevice...")
         try handle(AudioUnitSetProperty(usbAU,
                              kAudioOutputUnitProperty_CurrentDevice,
                              kAudioUnitScope_Input,
                              kAudioInputBus, &usbDriverDeviceID,
                              UInt32(MemoryLayout.size(ofValue: usbDriverDeviceID))))
   
-        log(DebugLevel.log, "Current Audio Format: \(usbAF!)")
+        Logger.log(.log, TAG, "Current Audio Format: \(usbAF!)")
         
         // Set equal formats for input/output to avoid making AUHAL
         // convert PCM formats. For a diagram, see
@@ -264,7 +241,7 @@ class MuxHALAudioStreamer {
         
         // Set input stream format. this is the data format of audio coming
         // into the AUHAL unit's input scope. i.e. audio stream format from mic.
-        log(DebugLevel.log, "Setting stream formats equal for USBAudioDevice...")
+        Logger.log(.log, TAG, "Setting stream formats equal for USBAudioDevice...")
         /*try handle(AudioUnitSetProperty(usbAU,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
@@ -284,7 +261,7 @@ class MuxHALAudioStreamer {
         // Request very small internal IO buffer sizes to increase frequency
         // by which we send packets. This reduces latency but stresses CPU.
         var internalIOBufferSize = 128
-        log(DebugLevel.log, "Setting internal IO buffer size for USBAudioDevice (\(internalIOBufferSize))...")
+        Logger.log(.log, TAG, "Setting internal IO buffer size for USBAudioDevice (\(internalIOBufferSize))...")
         try handle(AudioUnitSetProperty(usbAU,
                              kAudioDevicePropertyBufferFrameSize,
                              kAudioUnitScope_Global,
@@ -292,7 +269,7 @@ class MuxHALAudioStreamer {
                              &internalIOBufferSize,
                              UInt32(MemoryLayout.size(ofValue: internalIOBufferSize))))
         
-        log(DebugLevel.log, "Initting recording unit and adding callback...")
+        Logger.log(.log, TAG, "Initting recording unit and adding callback...")
         usbAuhal.initUnit(unit: usbAU, inFormat: usbAF, pcmPacketReady: packetReady)
         usbAuhal.addRecordingCallback()
     }
@@ -330,8 +307,8 @@ class MuxHALAudioStreamer {
                 s += "Generic"
             }
 
-            print("Error: \(s)!")
-            print(error)
+            Logger.log(.emergency, TAG, "Error: \(s)!")
+            Logger.log(.emergency, TAG, "\(error)")
             throw error
         }
     }
