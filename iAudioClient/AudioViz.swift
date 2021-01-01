@@ -7,15 +7,24 @@
 
 import Foundation
 
+/// Class that modifies the state of the points array in ContentView.swift to
+/// enable visualization of time domain audio waveforms.
 class AudioViz {
     
+    /// Determined by UI.
     var numDots : Int!
+    
+    /// Connection to UI.
     var appState : AppState!
-    var sampleRate = 1    // pick a dot after every n samples
+    
+    /// Consider every sample.
+    var sampleRate = 1
+    
     var sampleIndex = 0
     var bufferIdx = 0
     var firstPacket = true
-    var ignoreVal : Int16 = 0
+    
+    /// Temporary buffer to avoid memory leaks.
     var buffer : [Double]!
 
     init(_ appState : AppState, _ numDots : Int) {
@@ -26,6 +35,7 @@ class AudioViz {
     
     func onNewBuffer(ptr : UnsafeBufferPointer<Int16>) {
         while sampleIndex < ptr.count {
+            // Swift is weird...
             let val = Double(Int(ptr[sampleIndex])) / Double(Int(Int16.max))
             buffer[bufferIdx] = val
             bufferIdx += 1
@@ -38,6 +48,7 @@ class AudioViz {
         sampleIndex -= ptr.count
     }
     
+    /// Creates array of points that will update UI on main thread. 
     func updateUI() {
         var arr = Array(repeating: Point(0), count: numDots)
         for i in 0..<arr.count {

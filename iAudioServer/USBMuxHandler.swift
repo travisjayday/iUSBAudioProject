@@ -1,3 +1,10 @@
+//
+//  USBMuxHandler.swift
+//  iAudioServer
+//
+//  Created by Travis Ziegler on 12/17/20.
+//
+
 import Cocoa
 import Socket
 

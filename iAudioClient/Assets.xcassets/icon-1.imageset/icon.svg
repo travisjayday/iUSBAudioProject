@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 109.59 109.59" style="enable-background:new 0 0 109.59 109.59;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#2386A5;}
+	.st1{fill:url(#SVGID_1_);}
+	.st2{fill:url(#SVGID_2_);}
+	.st3{fill:url(#SVGID_3_);}
+	.st4{fill:url(#SVGID_4_);}
+	.st5{fill:#27AAE1;}
+	.st6{fill:#FFFFFF;}
+</style>
+<g id="Layer_2">
+	<path class="st0" d="M96.65,109.59h-83.7C5.8,109.59,0,103.79,0,96.65v-83.7C0,5.8,5.8,0,12.94,0h83.7
+		c7.15,0,12.94,5.8,12.94,12.94v83.7C109.59,103.79,103.79,109.59,96.65,109.59z"/>
+</g>
+<g id="Layer_3">
+	<radialGradient id="SVGID_1_" cx="54.889" cy="54.795" r="53.1611" gradientUnits="userSpaceOnUse">
+		<stop  offset="0.0195" style="stop-color:#1C75BC"/>
+		<stop  offset="1" style="stop-color:#72C9B9"/>
+	</radialGradient>
+	<circle class="st1" cx="54.89" cy="54.79" r="53.16"/>
+	<radialGradient id="SVGID_2_" cx="54.795" cy="54.795" r="45.0202" gradientUnits="userSpaceOnUse">
+		<stop  offset="0.0195" style="stop-color:#1C75BC"/>
+		<stop  offset="1" style="stop-color:#72C9B9"/>
+	</radialGradient>
+	<circle class="st2" cx="54.79" cy="54.79" r="45.02"/>
+	<radialGradient id="SVGID_3_" cx="54.889" cy="53.3852" r="40.0786" gradientUnits="userSpaceOnUse">
+		<stop  offset="0.0195" style="stop-color:#1C75BC"/>
+		<stop  offset="1" style="stop-color:#72C9B9"/>
+	</radialGradient>
+	<circle class="st3" cx="54.89" cy="53.39" r="40.08"/>
+	<radialGradient id="SVGID_4_" cx="54.889" cy="53.3852" r="14.6621" gradientUnits="userSpaceOnUse">
+		<stop  offset="0.0195" style="stop-color:#1C75BC"/>
+		<stop  offset="1" style="stop-color:#72C9B9"/>
+	</radialGradient>
+	<circle class="st4" cx="54.89" cy="53.39" r="14.66"/>
+</g>
+<g id="Layer_4">
+	<path class="st5" d="M57.15,15.79l52.44,52.26v41.54H61.84L49.28,92.86l5.61-20.75l-3.49-5.38L38.91,65.6l0.85-20.57
+		c-2.82,0.44,15.13,16.48,15.13,16.48V29.51L57.15,15.79z"/>
+</g>
+<g id="Layer_1">
+	<circle class="st6" cx="54.89" cy="84.4" r="10.15"/>
+	<rect x="51.4" y="30.26" class="st6" width="6.98" height="46.24"/>
+	<path class="st6" d="M45.06,30.26h19.66c0.9,0,1.44-1,0.94-1.75l-9.83-14.71c-0.45-0.67-1.43-0.67-1.87,0l-9.83,14.71
+		C43.62,29.26,44.16,30.26,45.06,30.26z"/>
+	<path class="st6" d="M43.09,46.36c0,3.51-2.85,6.36-6.36,6.36c-1.38,0-2.65-0.44-3.69-1.18c-1.62-1.15-2.67-3.05-2.67-5.18
+		c0-3.51,2.85-6.36,6.36-6.36C40.24,40,43.09,42.85,43.09,46.36z"/>
+	<path class="st6" d="M51.4,72.06c-2.15,0-18.37,2.19-18.37-20.51c0,0,0.54-0.08,3.76,0.19c0.55,0.05,3.62-0.19,3.62-0.19
+		S37.88,65.29,51.4,65.29"/>
+	<path class="st6" d="M72.18,43.36h-5.26c-1.04,0-1.88-0.84-1.88-1.88v-5.26c0-1.04,0.84-1.88,1.88-1.88h5.26
+		c1.04,0,1.88,0.84,1.88,1.88v5.26C74.06,42.52,73.22,43.36,72.18,43.36z"/>
+	<path class="st6" d="M58.38,55.55c4.12,0,8.54-3.16,8.54-12.19h5.26l0,0c0,14.91-7.96,18.16-13.8,18.16"/>
+</g>
+</svg>

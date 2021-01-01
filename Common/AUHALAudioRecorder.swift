@@ -1,6 +1,6 @@
 //
 //  AUHALAudioRecorder.swift
-//  iAudioClient
+//  iAudio CommonTools
 //
 //  Created by Travis Ziegler on 12/29/20.
 //
@@ -8,6 +8,9 @@
 import Foundation
 import AVFoundation
 
+/// Abstraction for recording audio from an AUHAL audio unit. Pre-configure the
+/// unit, pass it into the constructore. This class will take care of efficiently
+/// rendering and sending callbacks when new PCM audio data comes in from system.
 class AUHALAudioRecorder {
     var audioUnit : AudioComponentInstance!
     var inAudioF : AudioStreamBasicDescription!

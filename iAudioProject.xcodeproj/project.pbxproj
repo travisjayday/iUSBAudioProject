@@ -34,7 +34,7 @@
 		569E971525910880006EC6BC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 569E971425910880006EC6BC /* Assets.xcassets */; };
 		569E971825910880006EC6BC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 569E971725910880006EC6BC /* Preview Assets.xcassets */; };
 		569E97202591089A006EC6BC /* DeviceIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 569E971F2591089A006EC6BC /* DeviceIcon.icns */; };
-		56C8529125910BA700453CA6 /* MuxHALAudioStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C8529025910BA700453CA6 /* MuxHALAudioStreamer.swift */; };
+		56C8529125910BA700453CA6 /* ServerAUHALInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C8529025910BA700453CA6 /* ServerAUHALInterface.swift */; };
 		56C8529C2591491000453CA6 /* Socket in Frameworks */ = {isa = PBXBuildFile; productRef = 56C8529B2591491000453CA6 /* Socket */; };
 /* End PBXBuildFile section */
 
@@ -81,7 +81,7 @@
 		569E971725910880006EC6BC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		569E971925910880006EC6BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		569E971F2591089A006EC6BC /* DeviceIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DeviceIcon.icns; sourceTree = "<group>"; };
-		56C8529025910BA700453CA6 /* MuxHALAudioStreamer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuxHALAudioStreamer.swift; sourceTree = "<group>"; };
+		56C8529025910BA700453CA6 /* ServerAUHALInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerAUHALInterface.swift; sourceTree = "<group>"; };
 		56F9CAA92590F72500845C37 /* DriverKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DriverKit.framework; path = System/Library/Frameworks/DriverKit.framework; sourceTree = SDKROOT; };
 		56F9CB1E2590FA3C00845C37 /* USBAudioDriver.driver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = USBAudioDriver.driver; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -153,11 +153,11 @@
 			children = (
 				565C3483258C20E70012ED2D /* iAudioServerApp.swift */,
 				5696714B258D756F007AC4E7 /* USBMuxHandler.swift */,
-				56C8529025910BA700453CA6 /* MuxHALAudioStreamer.swift */,
+				56C8529025910BA700453CA6 /* ServerAUHALInterface.swift */,
+				5674CA58259E8FB0005B192C /* fft.swift */,
 				565C3485258C20E70012ED2D /* ContentView.swift */,
 				565C3487258C20E70012ED2D /* Assets.xcassets */,
 				565C348C258C20E70012ED2D /* Info.plist */,
-				5674CA58259E8FB0005B192C /* fft.swift */,
 				565C348D258C20E70012ED2D /* iAudioServer.entitlements */,
 				565C3489258C20E70012ED2D /* Preview Content */,
 			);
@@ -177,11 +177,11 @@
 			children = (
 				569E971025910880006EC6BC /* iAudioClientApp.swift */,
 				5694BD0B25979BFB002A6ABA /* ClientAUHALInterface.swift */,
+				5682E7C4259E25C500EBFEC6 /* AudioViz.swift */,
 				569E971225910880006EC6BC /* ContentView.swift */,
 				569E971425910880006EC6BC /* Assets.xcassets */,
 				569E971925910880006EC6BC /* Info.plist */,
 				569E971625910880006EC6BC /* Preview Content */,
-				5682E7C4259E25C500EBFEC6 /* AudioViz.swift */,
 			);
 			path = iAudioClient;
 			sourceTree = "<group>";
@@ -384,7 +384,7 @@
 				560C498B259BCE8B0010E4F5 /* AUHALAudioRecorder.swift in Sources */,
 				565C3486258C20E70012ED2D /* ContentView.swift in Sources */,
 				5674CA59259E8FB0005B192C /* fft.swift in Sources */,
-				56C8529125910BA700453CA6 /* MuxHALAudioStreamer.swift in Sources */,
+				56C8529125910BA700453CA6 /* ServerAUHALInterface.swift in Sources */,
 				5696714C258D756F007AC4E7 /* USBMuxHandler.swift in Sources */,
 				565C3484258C20E70012ED2D /* iAudioServerApp.swift in Sources */,
 				5692C065259CEAAC00853D56 /* PCMTransceiver.swift in Sources */,

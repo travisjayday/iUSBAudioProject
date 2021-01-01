@@ -11,14 +11,18 @@ import CoreAudio
 import AudioUnit
 import AudioToolbox
 
-let kAudioInputBus : UInt32 = 1;    // input bus element on AUHAL
-let kAudioOutputBus : UInt32 = 0;   // output bus element on the AUHAL
+/// input bus element on AUHAL
+let kAudioInputBus : UInt32 = 1;
+
+/// output bus element on the AUHAL
+let kAudioOutputBus : UInt32 = 0;
 
 /// Class in charge of streaming audio from the HAL plugin USBAudioDriver.
 ///
 /// Uses AUHAL to communicate with the virtual device and issues resulting
-/// data to callbacks passed into [makeSession](x-source-tag://makeSession)
-class MuxHALAudioStreamer {
+/// data to callbacks passed into [makeSession](x-source-tag://makeSession).
+/// Juggles two AUHAL units, one for recording, one for playback.
+class ServerAUHALInterface {
     
     var micAuhal: AUHALAudioPlayer!
     var usbAuhal: AUHALAudioRecorder!
@@ -38,10 +42,13 @@ class MuxHALAudioStreamer {
     /// The AUHAL Audio Unit responseible for piping mic data from iOS.
     var micAU: AudioComponentInstance!
 
+    /// Debugging.
     let TAG = "MuxHALAudioStreamer"
     
+    /// Set by iAudioServer.
     var useMic = true
     
+    /// AudioDeviceIDs of our virtual devices.
     var usbDriverDeviceID : AudioDeviceID!
     var micDriverDeviceID : AudioDeviceID? = nil
 
@@ -63,6 +70,7 @@ class MuxHALAudioStreamer {
         }
     }
     
+    /// Create an AUHAL instance.
     func instantiateAUHAL(au : UnsafeMutablePointer<AudioComponentInstance?>) {
         // Find HAL audio component.
         var desc = AudioComponentDescription(
@@ -131,6 +139,8 @@ class MuxHALAudioStreamer {
         Logger.log(.log, TAG, "Started output unit")
     }
     
+    /// Prime micAU for sending audio to iOSMicDriver virtual audio device
+    /// which will then act as a system mic input.
     func initIOSMicReceiving() throws {
 
         // Enable IO on the virtual speaker's output bus.
@@ -204,6 +214,7 @@ class MuxHALAudioStreamer {
         Logger.log(.log, TAG, "Started iOS Mic unit")
     }
     
+    /// Prime usbAU by preparing to record from USBAudioDevice and send that data.
     func initSystemAudioTransmission() throws {
         
         // Enable IO to signal to input scope. This is the element system

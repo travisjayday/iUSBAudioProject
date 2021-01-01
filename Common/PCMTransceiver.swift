@@ -1,23 +1,39 @@
+//
+//  PCMTransceiver.swift
+//  iAudio CommonTools
+//
+//  Created by Travis Ziegler on 12/29/20.
+//
+
 import Foundation
 import Socket
 import AVFoundation
 
+/// Abstraction for socket based communication of audio data. Handles basic
+/// error correction, parses packet headers, calls appropriate callbacks. 
 class PCMTransceiver {
     
-    public enum PCMPAK {
-        case ServerHandshakeWithMic
-        case ServerHandshake
-        case PCMData
-    }
-    
+    /// Called when a new PCM Audio packet comes in.
     var dataCallback: ((UnsafeMutablePointer<Int8>, Int) -> Void)!
+    
+    /// Called when a new connection start handshake comes in. First arg is
+    /// The speaker output audio format requested by macOS, second arg is the
+    /// microphone audio output format requested by macOS.
     var handshakeCallback: ((AudioStreamBasicDescription, AudioStreamBasicDescription?) -> Void)?
+    
+    /// Called when socket dies.
     var terminatedCallback: (() -> Void)!
+    
+    /// The socket.
     var sock : Socket
+    
+    /// Packet signatures and pre-allocated buffer.
     let kHeaderSig    = Data([0x69, 0x4, 0x20, 0])  // Header PCM Data Signature
     let kHandshakeSig = Data([0x69, 0x4, 0x19, 0])  // Header Handshak Signature
     let kHandMicSig   = Data([0x69, 0x4, 0x21, 0])  // Header Handshak With Mic Signature
     var packet        = Data(capacity: 2048)        // Preallocate Packet Buffer
+    
+    /// Debugging.
     let TAG = "PCMTransceiver"
     
     init(_ _sock : Socket,
@@ -82,6 +98,10 @@ class PCMTransceiver {
        }
     }
     
+    /// Reads *exactly* n bytes from current sock into buffer.
+    /// - Parameters:
+    ///   - buffer: Destination buffer.
+    ///   - count: Will ensure that this many bytes get read
     func readBytes(buffer : UnsafeMutablePointer<CChar>, count : Int) throws {
         var bytesRead = 0
         while bytesRead != count {
@@ -92,6 +112,8 @@ class PCMTransceiver {
         }
     }
     
+    /// Error correcting recieve loop. Calls appropritae callbacks on certain
+    /// packets recevied (like audio packets, handshakes, etc).
     func receiveLoop() throws {
         var header: [Int8] = [Int8](repeating: 0, count: 8)
         var pcmBuf = Data(capacity: 2048)
@@ -119,7 +141,9 @@ class PCMTransceiver {
             Logger.log(.verbose, TAG, "Payload size \(payloadSize)")
             
             // we received a valid handshake packet
-            if header[0] == 0x69 && header[1] == 0x4 && header[2] == 0x19 || header[2] == 0x21 {
+            if header[0] == 0x69 &&
+                header[1] == 0x4 &&
+                (header[2] == 0x19 || header[2] == 0x21) {
                 
                 var outAF : AudioStreamBasicDescription?
                 var inAF: AudioStreamBasicDescription?
@@ -164,6 +188,7 @@ class PCMTransceiver {
                 })
              
             }
+            // Error correction of wrong packet signature was detected.
             else {
                 Logger.log(.emergency, TAG, "We've encountered misaligned communication. Attempting to "
                  + "autocorrect communication by stalling until next header")

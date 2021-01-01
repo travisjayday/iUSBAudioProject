@@ -9,25 +9,40 @@ import Foundation
 import AVFoundation
 
 
-// See http://atastypixel.com/blog/using-remoteio-audio-unit/ for an example.
+/// Class in charge of interfacing with audio devices on iOS. Provides callbacks
+/// for microphone and speaker endpoints.
+/// See http://atastypixel.com/blog/using-remoteio-audio-unit/ for an example.
 class ClientAUHALInterface {
 
+    /// Whether or not we are streaming audio
     var initted = false
     
+    /// The audio unit that will record / send audio to speaker
     var remoteAudioUnit: AudioComponentInstance!
+    
+    /// Helper class to play audio in speaker. Provides ring buffer, zero
+    /// memory leak, efficient implementation of audio output.
     var auhalPlayer: AUHALAudioPlayer!
+    
+    /// Helper class to record microphone. Efficient, zero leak.
     var auhalRecorder: AUHALAudioRecorder!
+    
+    /// The audio format used on when piping audio into speaker.
     var outAudioF: AudioStreamBasicDescription!
     
+    /// The audio format used when pulling audio out of microphone.
     var inAudioF: AudioStreamBasicDescription!
+    
+    /// Whether we stream use mic or not.
+    var useMic = false
    
+    /// Debugging variables.
     var timeStart : Double = 0
     var bytesReceived : Int = 0
     var internalIOBufferDuration : Double = 0.0
-    var useMic = false
-    
     let TAG = "ClientAUHALInterface"
 
+    /// Stops the audio unit for recording / pplaying audio
     func endSession() {
         let speed = (Double(bytesReceived) / (Date().timeIntervalSince1970 - timeStart))
         Logger.log(.log, TAG, "SPEED: \(speed)bytes/s");
@@ -37,6 +52,7 @@ class ClientAUHALInterface {
         initted = false
     }
     
+    /// Initialize unit with known formats, registers callbacks.
     func initUnit(outFormat: AudioStreamBasicDescription,
                   inFormat: AudioStreamBasicDescription?,
                   _micPacketReady: ((_ ptr : UnsafeMutableRawPointer, _ len : Int) -> Void)?)
@@ -57,13 +73,14 @@ class ClientAUHALInterface {
         }
         timeStart = Date().timeIntervalSince1970
 
+        // Set up the RemoteIO audio unit
         var desc = AudioComponentDescription(
             componentType: kAudioUnitType_Output,
             componentSubType: kAudioUnitSubType_RemoteIO,
             componentManufacturer: kAudioUnitManufacturer_Apple,
             componentFlags: 0, componentFlagsMask: 0)
         
-        var inComp = AudioComponentFindNext(nil, &desc)
+        let inComp = AudioComponentFindNext(nil, &desc)
         
         AudioComponentInstanceNew(inComp!, &remoteAudioUnit)
         
@@ -167,11 +184,13 @@ class ClientAUHALInterface {
         
         Logger.log(.log, TAG, "Configured for internalIOBufersize=\(internalIOBufferDuration)")
         
+        // Create the audio player and add callbacks.
         auhalPlayer = AUHALAudioPlayer()
         auhalPlayer.initUnit(unit: remoteAudioUnit, outFormat: outAudioF)
         auhalPlayer.addPlaybackCallback()
         
         if useMic {
+            /// Create the recorder and add callbacsk.
             auhalRecorder = AUHALAudioRecorder()
             auhalRecorder.initUnit(unit: remoteAudioUnit,
                                    inFormat: inFormat!,
@@ -179,6 +198,7 @@ class ClientAUHALInterface {
             auhalRecorder.addRecordingCallback()
         }
         
+        // Start streaming.
         AudioUnitInitialize(remoteAudioUnit)
         AudioOutputUnitStart(remoteAudioUnit)
     }
@@ -217,5 +237,4 @@ class ClientAUHALInterface {
                       code: Int(errorCode),
                       userInfo: [NSLocalizedDescriptionKey : "CAError: \(errorCode)" ])
     }
-    
 }

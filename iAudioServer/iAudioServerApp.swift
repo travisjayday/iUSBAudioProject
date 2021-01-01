@@ -39,7 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem!
     var contentView: ContentView!
     var muxHandler: USBMuxHandler!
-    var audioStreamer: MuxHALAudioStreamer!
+    var audioStreamer: ServerAUHALInterface!
     var useMic : Bool = true
     let TAG = "ServerAppDelegate"
     
@@ -140,7 +140,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Create class to interface with system audio output
         Logger.log(.log, TAG, "Configuring audio devices...")
-        audioStreamer = MuxHALAudioStreamer()
+        audioStreamer = ServerAUHALInterface()
                 
         /// Start audio streaming session
         try audioStreamer.makeSession(
