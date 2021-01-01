@@ -100,9 +100,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// - Parameter sock: The socket that directly connects to the device.
     func deviceConnected(_ sock: Socket) throws -> Void{
         
+        try sock.setReadTimeout(value: 3)
+        try sock.setWriteTimeout(value: 3)
+        
         func onReceived(bytes : UnsafeMutablePointer<Int8>, len : Int) {
             Logger.log(.verbose, TAG, "about to enqueue IOS MIC packet")
-            audioStreamer.micAuhal.enqueuePCM(bytes, len)
+            if contentView.serverState.enableMicDistort {
+                bytes.withMemoryRebound(to: Int16.self, capacity: len) { (ptr : UnsafeMutablePointer<Int16>) in
+                    let bufptr = UnsafeMutableBufferPointer<Int16>.init(start: ptr, count: len / 2)
+                    var arr = Array(repeating: 0.0, count: len / 2)
+                    for i in 0..<arr.count {
+                        arr[i] = Double(Int(bufptr[i]))
+                    }
+                    let fft = FFT()
+                    let res = fft.calculate(arr, fps: 48000)
+                    for i in 0..<res.count {
+                        let j = max(min(Int(res[i]), Int(Int16.max)), Int(Int16.min))
+                        bufptr[i] = Int16(j)
+                    }
+                    audioStreamer.micAuhal.enqueuePCM(bytes, len)
+                }
+            }
+            else {
+                audioStreamer.micAuhal.enqueuePCM(bytes, len)
+            }
         }
         
         func onTerminated() {
@@ -110,6 +131,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             audioStreamer.endSession()
         }
         
+        Logger.log(.log, TAG, "Creating PCM transceiver...")
         let trans = PCMTransceiver(
             sock,
             dataCallback: onReceived,
@@ -117,6 +139,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             terminatedCallback: onTerminated)
         
         // Create class to interface with system audio output
+        Logger.log(.log, TAG, "Configuring audio devices...")
         audioStreamer = MuxHALAudioStreamer()
                 
         /// Start audio streaming session
@@ -125,6 +148,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             _handshakePacketReady: trans.handshakePacketReady,
             _useMic: useMic)
 
+        Logger.log(.log, TAG, "Entering receive loop...")
         try trans.receiveLoop()
     }
 }

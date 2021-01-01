@@ -68,7 +68,9 @@ class AUHALAudioRecorder {
             Logger.log(.verbose, _self.TAG, "Rendered with status \(res) "
                     + "Got \(_self.audioBufferList.count) buffers "
                     + "of size \(_self.audioBufferList[0].mDataByteSize) "
-                    + "and data \(_self.audioBufferList[0].mData)")
+                    + "and data \(_self.audioBufferList[0].mData) "
+                    + "with num channels \(_self.audioBufferList[0].mNumberChannels) "
+                    + "so recorded \(inNumberFrames) of data")
             
             // Ready to send buffers over to device.
             if _self.audioBufferList[0].mData != nil {

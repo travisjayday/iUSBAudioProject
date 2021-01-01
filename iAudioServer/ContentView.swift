@@ -18,6 +18,7 @@ enum ServerStatus {
 class ServerState: ObservableObject {
     @Published var status = ServerStatus.connected_inactive;
     @Published var numDevices = 0;
+    @Published var enableMicDistort = false;
 }
 
 struct ContentView: View {
@@ -67,6 +68,10 @@ struct ContentView: View {
         }
     }
     
+    func toggleMic() {
+        serverState.enableMicDistort.toggle()
+    }
+    
     var body: some View {
         VStack(alignment: .leading) {
             HStack(alignment: .top) {
@@ -83,6 +88,11 @@ struct ContentView: View {
             Divider();
             genStatus();
             Divider();
+            
+            Toggle(isOn: $serverState.enableMicDistort, label: {
+                Text("iOS Microphone FFT")
+            })
+
         }
         .frame(width: 200.0).padding(15)
     }

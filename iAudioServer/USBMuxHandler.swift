@@ -79,7 +79,7 @@ class USBMuxHandler: NSObject {
         // read remaining payload into memory
         let payloadSize = Int(packetSize) - kUSBMuxHeaderSize
         if payloadSize < 10 {
-            Logger.log(.emergency, TAG, "USBMuxd got corrupted!")
+            Logger.log(.emergency, TAG, "USBMuxd got corrupted! Received paylod of size: \(payloadSize)")
             throw NSError(domain: "Error_Domain", code: 100, userInfo: nil)
         }
         
@@ -121,7 +121,12 @@ class USBMuxHandler: NSObject {
             let s = String.init(data: data as Data, encoding: .utf8)
             Logger.log(.log, TAG, "Received: \(s)")
             try sock.write(from: "Hello from computer".data(using: .utf8)!)
-            try connectedCallback(sock)
+            do {
+                try connectedCallback(sock)
+            }
+            catch {
+                Logger.log(.emergency, TAG, "Fatal: Connection callback failed with \(error)")
+            }
             return true;
         }
         else {

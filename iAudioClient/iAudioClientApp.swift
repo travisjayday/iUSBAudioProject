@@ -66,14 +66,20 @@ class ClientMain  {
     var sock : Socket!
     var appState : AppState!
     let TAG = "ClientMain"
+    let viz = true
+    var audioViz : AudioViz!
 
     init(appState : AppState) {
         self.appState = appState
+        let numDots = self.appState.dots.count
+        audioViz = AudioViz(appState, numDots)
     }
 
     func startListening() throws {
    
         sock = try Socket.create(family: .inet, type: .stream, proto: .tcp)
+        try sock.setReadTimeout(value: 3)
+        try sock.setWriteTimeout(value: 3)
         try sock.listen(on: 7000)
         try sock.acceptConnection()
         try sock.write(from: "Hello from iPad".data(using: .ascii)!)
@@ -85,7 +91,17 @@ class ClientMain  {
         func onHandshake(outAF : AudioStreamBasicDescription,
                          inAF  : AudioStreamBasicDescription?) {
             auhalIF = ClientAUHALInterface()
-            auhalIF.initUnit(outFormat: outAF, inFormat: inAF, _micPacketReady: trans.packetReady)
+            do {
+                try auhalIF.initUnit(outFormat: outAF, inFormat: inAF, _micPacketReady: onSend)
+            } catch {
+                print("Fata l error")
+            }
+        }
+        
+        func onSend(pcmPtr : UnsafeMutableRawPointer, pcmLen : Int) {
+            let ptr = pcmPtr.bindMemory(to: Int16.self, capacity: pcmLen)
+            audioViz.onNewBuffer(ptr: UnsafeBufferPointer<Int16>.init(start: ptr, count: pcmLen / 2))
+            trans.packetReady(pcmPtr, pcmLen)
         }
         
         func onReceived(bytes : UnsafeMutablePointer<Int8>, len : Int) {

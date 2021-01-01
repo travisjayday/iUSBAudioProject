@@ -153,7 +153,7 @@ static UInt64                   gDevice_NumberTimeStamps        = 0;
 static Float64                  gDevice_AnchorSampleTime        = 0.0;
 static UInt64                   gDevice_AnchorHostTime          = 0;
 
-static char*                    gDevice_ringBuffer              = NULL; //[kDevice_RingBufferSize];
+static char*                    gDevice_ringBuffer              = 0x3; //[kDevice_RingBufferSize];
 static UInt64                   gDevice_ringBufferOffset        = 0;
 static UInt64                   gDevice_inIOBufferByteSize      = 0;
 static UInt64                   gDevice_remainingRingBufferByteSize = 0;
@@ -161,10 +161,13 @@ static UInt64                   gDevice_remainingRingBufferByteSize = 0;
 static bool                     gStream_Input_IsActive          = true;
 static bool                     gStream_Output_IsActive         = true;
 
-static const Float32            kVolume_MinDB                   = -96.0;
-static const Float32            kVolume_MaxDB                   = 6.0;
+static const Float32            kVolume_MinDB                   = 0.0;
+static const Float32            kVolume_MaxDB                   = 1.0;
 static Float32                  gVolume_Input_Master_Value      = 0.0;
 static Float32                  gVolume_Output_Master_Value     = 0.0;
+
+// Computed such that each packet is scaled by this amount
+static Float32                  gVolume_Factor                  = 1.0;
 
 static bool                     gMute_Input_Master_Value        = false;
 static bool                     gMute_Output_Master_Value       = false;

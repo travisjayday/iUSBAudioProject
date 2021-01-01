@@ -3380,12 +3380,16 @@ static OSStatus USBAudio_SetControlPropertyData(AudioServerPlugInDriverRef inDri
                         theNewVolume = 1.0;
                     }
                     pthread_mutex_lock(&gPlugIn_StateMutex);
+                    
+                    // We change both input and output volumes to syncronize volumes because
+                    // this is a virtual device and having two volumes is redundant.
                     if(inObjectID == kObjectID_Volume_Input_Master)
                     {
                         if(gVolume_Input_Master_Value != theNewVolume)
                         {
                             gVolume_Input_Master_Value = theNewVolume;
-                            *outNumberPropertiesChanged = 2;
+                            gVolume_Output_Master_Value = theNewVolume;
+                            *outNumberPropertiesChanged = 4;
                             outChangedAddresses[0].mSelector = kAudioLevelControlPropertyScalarValue;
                             outChangedAddresses[0].mScope = kAudioObjectPropertyScopeGlobal;
                             outChangedAddresses[0].mElement = kAudioObjectPropertyElementMaster;
@@ -3399,7 +3403,8 @@ static OSStatus USBAudio_SetControlPropertyData(AudioServerPlugInDriverRef inDri
                         if(gVolume_Output_Master_Value != theNewVolume)
                         {
                             gVolume_Output_Master_Value = theNewVolume;
-                            *outNumberPropertiesChanged = 2;
+                            gVolume_Input_Master_Value = theNewVolume;
+                            *outNumberPropertiesChanged = 4;
                             outChangedAddresses[0].mSelector = kAudioLevelControlPropertyScalarValue;
                             outChangedAddresses[0].mScope = kAudioObjectPropertyScopeGlobal;
                             outChangedAddresses[0].mElement = kAudioObjectPropertyElementMaster;
@@ -3408,6 +3413,7 @@ static OSStatus USBAudio_SetControlPropertyData(AudioServerPlugInDriverRef inDri
                             outChangedAddresses[1].mElement = kAudioObjectPropertyElementMaster;
                         }
                     }
+                    gVolume_Factor = (kVolume_MaxDB - kVolume_MinDB) * gVolume_Output_Master_Value;
                     pthread_mutex_unlock(&gPlugIn_StateMutex);
                     break;
                 
@@ -3592,7 +3598,7 @@ static OSStatus USBAudio_StartIO(AudioServerPlugInDriverRef inDriver, AudioObjec
         gDevice_AnchorSampleTime = 0;
         gDevice_AnchorHostTime = mach_absolute_time();
         
-        if (gDevice_ringBuffer == NULL)
+        if (gDevice_ringBuffer == 0x3)
         {
             // allocate memory for ringbuffer
             gDevice_ringBuffer = (char*) malloc(kDevice_RingBufferSize);
@@ -3639,11 +3645,11 @@ static OSStatus USBAudio_StopIO(AudioServerPlugInDriverRef inDriver, AudioObject
         // We need to stop the hardware, which in this case means that there's nothing to do.
         gDevice_IOIsRunning = 0;
         
-        if (gDevice_ringBuffer != NULL)
+        if (gDevice_ringBuffer != 0x3)
         {
             // Free memory for ringbuffer.
             free(gDevice_ringBuffer);
-            gDevice_ringBuffer = NULL;
+            gDevice_ringBuffer = 0x3;
         }
     }
     else
@@ -3789,7 +3795,7 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
     FailWithAction(gDevice_ringBuffer == NULL, theAnswer = kAudioHardwareUnspecifiedError, Done,
         "USBAudio_DoIOOperation: Attempted to write IO after free")
     
-    pthread_mutex_lock(&gDevice_IOMutex);
+    // pthread_mutex_lock(&gDevice_IOMutex);
 
     /*
     // clear the buffer if this iskAudioServerPlugInIOOperationReadInput
@@ -3852,7 +3858,7 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
         
     // copy io buffer to internal ring buffer
     if (inOperationID == kAudioServerPlugInIOOperationWriteMix) {
-
+        
         // calculate the ring buffer offset for the first sample OUTPUT
         gDevice_ringBufferOffset = ((UInt64)(inIOCycleInfo->mOutputTime.mSampleTime * kDevice_BytesPerFrame) % kDevice_RingBufferSize);
 
@@ -3861,6 +3867,11 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
 
         // calculate the size of the IO buffer
         gDevice_inIOBufferByteSize = inIOBufferFrameSize * kDevice_BytesPerFrame;
+        
+        // here we can modify the buffer we received. We asssume signed int16 format.
+        int16_t* buf = (int16_t*) ioMainBuffer;
+        for (int i = 0; i < inIOBufferFrameSize; i++)
+            buf[i] *= gVolume_Factor;
 
         if (gDevice_remainingRingBufferByteSize > gDevice_inIOBufferByteSize)
         {
@@ -3882,7 +3893,7 @@ static OSStatus USBAudio_DoIOOperation(AudioServerPlugInDriverRef inDriver, Audi
         memset(ioMainBuffer, 0, gDevice_inIOBufferByteSize);
     }
 
-    pthread_mutex_unlock(&gDevice_IOMutex);
+    // pthread_mutex_unlock(&gDevice_IOMutex);
 
 Done:
     return theAnswer;

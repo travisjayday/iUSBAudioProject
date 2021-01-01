@@ -396,6 +396,7 @@ class MuxHALAudioStreamer {
                 }
             }
         }
+        Logger.log(.emergency, TAG, "Fatal: could not find specified audio device: \(uid)")
         throw NSError(domain: "Error_Domain", code: 100, userInfo: nil)
     }
 }

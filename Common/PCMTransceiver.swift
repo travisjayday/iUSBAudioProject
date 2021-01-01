@@ -63,7 +63,7 @@ class PCMTransceiver {
     /// - Parameters:
     ///   - pcmPtr: Pointer to the PCM Audio buffer.
     ///   - pcmLen: Length of the PCM Audio buffer
-    func packetReady(pcmPtr : UnsafeMutableRawPointer, pcmLen : Int) {
+    func packetReady(_ pcmPtr : UnsafeMutableRawPointer, _ pcmLen : Int) {
         var len : UInt32 = UInt32(pcmLen)
         
         packet.removeAll(keepingCapacity: true)
@@ -71,6 +71,8 @@ class PCMTransceiver {
         packet.append(Data(bytes: &len, count: 4))
         packet.append(Data(bytesNoCopy: pcmPtr, count: pcmLen,
                            deallocator: Data.Deallocator.none))
+        Logger.log(.verbose, TAG, "Sending packet with data \(packet[0]) \(packet[1]) \(packet[2])" +
+            " \(packet[3]) \(packet[4]) \(packet[5])")
         do {
             try sock.write(from: packet)
         } catch {
@@ -78,6 +80,16 @@ class PCMTransceiver {
             sock.close()
             terminatedCallback()
        }
+    }
+    
+    func readBytes(buffer : UnsafeMutablePointer<CChar>, count : Int) throws {
+        var bytesRead = 0
+        while bytesRead != count {
+            bytesRead += try sock.read(into:
+                            buffer.advanced(by: bytesRead),
+                            bufSize: count - bytesRead,
+                            truncate: true)
+        }
     }
     
     func receiveLoop() throws {
@@ -90,11 +102,11 @@ class PCMTransceiver {
                 return
             }
             if !errorCorrectedFlag {
-                try sock.read(into: &header, bufSize: 8, truncate: true)
+                try readBytes(buffer: &header, count: 8)
             }
             else {
                 errorCorrectedFlag = false
-                try sock.read(into: &header + 2, bufSize: 6, truncate: true)
+                try readBytes(buffer: &header + 2, count: 6)
             }
             
             Logger.log(.verbose, TAG, "Received header \(header[0]) \(header[1]) \(header[2]) \(header[3])" +
@@ -116,7 +128,7 @@ class PCMTransceiver {
                     // handshake with mic disabled
                     var asbdBuf = Data.init(count: Int(payloadSize))
                     try asbdBuf.withUnsafeMutableBytes({
-                        try sock.read(into: $0, bufSize: payloadSize, truncate: true)
+                        try readBytes(buffer: $0, count: payloadSize)
                     })
                     outAF = dataToASBD(data: asbdBuf as NSData)
                     inAF = nil
@@ -125,10 +137,10 @@ class PCMTransceiver {
                     var outAsbd = Data.init(count: Int(payloadSize / 2))
                     var inAsbd = Data.init(count: Int(payloadSize / 2))
                     try outAsbd.withUnsafeMutableBytes({
-                        try sock.read(into: $0, bufSize: payloadSize / 2, truncate: true)
+                        try readBytes(buffer: $0, count: payloadSize / 2)
                     })
                     try inAsbd.withUnsafeMutableBytes({
-                        try sock.read(into: $0, bufSize: payloadSize / 2, truncate: true)
+                        try readBytes(buffer: $0, count: payloadSize / 2)
                     })
                     outAF = dataToASBD(data: outAsbd as NSData)
                     inAF = dataToASBD(data: inAsbd as NSData)
@@ -147,7 +159,7 @@ class PCMTransceiver {
                 pcmBuf.resetBytes(in: 0..<payloadSize)
                 try pcmBuf.withUnsafeMutableBytes({(ptr : UnsafeMutableRawBufferPointer) in
                     let p = ptr.baseAddress!.assumingMemoryBound(to: Int8.self)
-                    try sock.read(into: p, bufSize: payloadSize, truncate: true)
+                    try readBytes(buffer: p, count: payloadSize)
                     dataCallback(p, payloadSize)
                 })
              
@@ -156,9 +168,9 @@ class PCMTransceiver {
                 Logger.log(.emergency, TAG, "We've encountered misaligned communication. Attempting to "
                  + "autocorrect communication by stalling until next header")
                 while true {
-                    try sock.read(into: &header, bufSize: 1, truncate: true)
+                    try readBytes(buffer: &header, count: 1)
                     if header[0] == 0x69 {
-                        try sock.read(into: &header + 1, bufSize: 1, truncate: true)
+                        try readBytes(buffer: &header + 1, count: 1)
                         if header[1] == 0x4 {
                             break
                         }

@@ -37,7 +37,10 @@ class ClientAUHALInterface {
         initted = false
     }
     
-    func initUnit(outFormat: AudioStreamBasicDescription, inFormat: AudioStreamBasicDescription?, _micPacketReady: ((_ ptr : UnsafeMutableRawPointer, _ len : Int) -> Void)?) {
+    func initUnit(outFormat: AudioStreamBasicDescription,
+                  inFormat: AudioStreamBasicDescription?,
+                  _micPacketReady: ((_ ptr : UnsafeMutableRawPointer, _ len : Int) -> Void)?)
+    throws {
         
         Logger.log(.log, TAG, "Initting mobile audio IO interface...")
         
@@ -68,47 +71,51 @@ class ClientAUHALInterface {
         var flag : UInt32 = 1;
         
         // Enable speaker IO.
-        AudioUnitSetProperty(remoteAudioUnit,
+        Logger.log(.log, TAG, "Enabling speaker IO...")
+        try handle(AudioUnitSetProperty(remoteAudioUnit,
                              kAudioOutputUnitProperty_EnableIO,
                              kAudioUnitScope_Output,
                              kAudioSystemOutputBus,
                              &flag,
-                             UInt32(MemoryLayout.size(ofValue: flag)))
+                             UInt32(MemoryLayout.size(ofValue: flag))))
         
         // Set output format (the audio format that will be played by speaker).
-        AudioUnitSetProperty(remoteAudioUnit,
+        /*Logger.log(.log, TAG, "Setting speaker output format...")
+        try handle(AudioUnitSetProperty(remoteAudioUnit,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Output,
                              kAudioSystemOutputBus,
                              &outAudioF,
-                             UInt32(MemoryLayout.size(ofValue: outAudioF)))
+                             UInt32(MemoryLayout.size(ofValue: outAudioF))))*/
         
         // Set input format (the audio format that will be fed into the unit).
-        AudioUnitSetProperty(remoteAudioUnit,
+        Logger.log(.log, TAG, "Setting speaker's input format...")
+        try handle(AudioUnitSetProperty(remoteAudioUnit,
                              kAudioUnitProperty_StreamFormat,
                              kAudioUnitScope_Input,
                              kAudioSystemOutputBus,
                              &outAudioF,
-                             UInt32(MemoryLayout.size(ofValue: outAudioF)))
+                             UInt32(MemoryLayout.size(ofValue: outAudioF))))
         
         if useMic {
             // Enable mic IO.
-            AudioUnitSetProperty(remoteAudioUnit,
+            Logger.log(.log, TAG, "Enabling IO on mic...")
+            try handle(AudioUnitSetProperty(remoteAudioUnit,
                                  kAudioOutputUnitProperty_EnableIO,
                                  kAudioUnitScope_Input,
                                  kAudioSystemInputBus,
                                  &flag,
-                                 UInt32(MemoryLayout.size(ofValue: flag)))
+                                 UInt32(MemoryLayout.size(ofValue: flag))))
             
             // Check if sample rates match (that's important)
             var preferredFormat = AudioStreamBasicDescription()
             var size = UInt32(MemoryLayout.size(ofValue: preferredFormat))
-            AudioUnitGetProperty(remoteAudioUnit,
+            try handle(AudioUnitGetProperty(remoteAudioUnit,
                                  kAudioUnitProperty_StreamFormat,
                                  kAudioUnitScope_Input,
                                  kAudioSystemInputBus,
                                  &preferredFormat,
-                                 &size)
+                                 &size))
             
             Logger.log(.log, TAG, "Device audio format: \(preferredFormat) versus our \(inAudioF)")
             
@@ -118,20 +125,30 @@ class ClientAUHALInterface {
             }
             
             // Set input format (format of microphone output)
-            AudioUnitSetProperty(remoteAudioUnit,
+            Logger.log(.log, TAG, "Setting microphone's input format")
+            /*try handle(AudioUnitSetProperty(remoteAudioUnit,
                                  kAudioUnitProperty_StreamFormat,
                                  kAudioUnitScope_Input,
                                  kAudioSystemInputBus,
                                  &inAudioF,
-                                 UInt32(MemoryLayout.size(ofValue: inAudioF)))
+                                 UInt32(MemoryLayout.size(ofValue: inAudioF))))*/
             
             // Set output format (the audio format we will receive).
-            AudioUnitSetProperty(remoteAudioUnit,
+            Logger.log(.log, TAG, "Setting microphone's output format")
+            try handle(AudioUnitSetProperty(remoteAudioUnit,
                                  kAudioUnitProperty_StreamFormat,
                                  kAudioUnitScope_Output,
                                  kAudioSystemInputBus,
                                  &inAudioF,
-                                 UInt32(MemoryLayout.size(ofValue: inAudioF)))
+                                 UInt32(MemoryLayout.size(ofValue: inAudioF))))
+            
+            try handle(AudioUnitGetProperty(remoteAudioUnit,
+                                 kAudioUnitProperty_StreamFormat,
+                                 kAudioUnitScope_Output,
+                                 kAudioSystemInputBus,
+                                 &preferredFormat,
+                                 &size))
+            Logger.log(.log, TAG, "Resultnig stream format for mic is: \(preferredFormat)")
         }
 
         do {
@@ -166,5 +183,39 @@ class ClientAUHALInterface {
         AudioOutputUnitStart(remoteAudioUnit)
     }
     
+    /// Throws error if errorCode
+    func handle(_ errorCode: OSStatus) throws {
+        if errorCode == 0 { return }
+        var s = "kAudioUnitErr_"
+        switch errorCode {
+        case kAudioUnitErr_Initialized:
+            s += "Initialized"; break
+        case kAudioUnitErr_InvalidProperty:
+            s += "InvalidProperty"; break
+        case kAudioUnitErr_FailedInitialization:
+            s += "FailedInitialization"; break
+        case kAudioUnitErr_InvalidScope:
+            s += "InvalidScope"; break
+        case kAudioUnitErr_InvalidElement:
+            s += "InvalidElement"; break
+        case kAudioUnitErr_InvalidParameter:
+            s += "InvalidParameter"; break
+        case kAudioUnitErr_CannotDoInCurrentContext:
+            s += "CannotDoInCurrentContext"; break
+        case kAudioUnitErr_InvalidPropertyValue:
+            s += "InvalidPropertyValue"; break
+        case kAudioUnitErr_InvalidParameter:
+            s += "InvalidParameter"; break
+        case kAudioUnitErr_PropertyNotWritable:
+            s += "PropertyNotWritable"; break
+        default:
+            s += "Generic"
+        }
+
+        Logger.log(.emergency, TAG, "Error: \(s)!")
+        throw NSError(domain: NSOSStatusErrorDomain,
+                      code: Int(errorCode),
+                      userInfo: [NSLocalizedDescriptionKey : "CAError: \(errorCode)" ])
+    }
     
 }

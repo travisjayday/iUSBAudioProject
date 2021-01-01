@@ -1,5 +1,6 @@
 dest=/Library/Audio/Plug-Ins/HAL
 src=$1
+norestart=$2
 
 echo "Going to install $src into $dest..."
 
@@ -20,13 +21,16 @@ read -p "Continue? " -n 1 -r
 
 eval $cmd
 
-echo "Restarting coreaudio..."
-sudo launchctl kickstart -kp system/com.apple.audio.coreaudiod
+if [ "$norestart" != "no" ]; then 
+	echo "Restarting coreaudio..."
+	sudo launchctl kickstart -kp system/com.apple.audio.coreaudiod
+fi
 
 echo "Moving driver..."
 sudo mv $src $dest 
 
-echo "Restarting coreaudio..."
-sudo launchctl kickstart -kp system/com.apple.audio.coreaudiod
-
+if [ "$norestart" != "no" ]; then 
+	echo "Restarting coreaudio..."
+	sudo launchctl kickstart -kp system/com.apple.audio.coreaudiod
+fi
 echo "Complete"
