@@ -1,4 +1,4 @@
-#iUSBAudioProject
+# iUSBAudioProject
 Software enabling macOS audio playback on an iOS device over USB. 
 
 # Project State
